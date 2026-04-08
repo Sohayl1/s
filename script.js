@@ -243,9 +243,11 @@ function updateCartUI() {
 
     if (!cartItemsContainer || !totalPriceElement) return;
 
+    // 1. تحديث رقم الإشعار فوق
     const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
     if (cartBadge) cartBadge.textContent = totalQuantity;
 
+    // 2. التحقق لو العربة فارغة
     if (cart.length === 0) {
         cartItemsContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">العربة فارغة حالياً</p>';
         totalPriceElement.textContent = '0 ج.م';
@@ -253,6 +255,7 @@ function updateCartUI() {
         return;
     }
 
+    // 3. بناء محتوى السلة
     let cartHtml = '';
     let subtotal = 0;
 
@@ -283,10 +286,12 @@ function updateCartUI() {
 
     cartItemsContainer.innerHTML = cartHtml;
 
-    const delivery = 30;
+    // 4. حساب الإجمالي مع التوصيل
+    const delivery = 30; // سعر التوصيل ثابت
     const finalTotal = subtotal + delivery;
     totalPriceElement.textContent = finalTotal + ' ج.م';
     
+    // حفظ التحديثات في المتصفح
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 
@@ -305,24 +310,24 @@ window.removeFromCart = function(index) {
     updateCartUI();
 };
 
-// ==========================================
 // الحدث الشامل للإضافة للسلة (Event Delegation)
-// ==========================================
 document.addEventListener('click', function(e) {
+    // التأكد إن الضغطة كانت على زر السلة أو الأيقونة اللي جواه
     const btn = e.target.closest('.add-to-cart-btn');
-    if (!btn) return; // لو الضغطة مش على زرار السلة، الكود يقف هنا
+    if (!btn) return; 
     
     e.preventDefault();
     const card = btn.closest('.card');
+    if (!card) return;
     
     try {
-        // استخراج الرابط بطريقة آمنة (Regex) لتجنب الأخطاء
+        // استخراج الرابط بطريقة آمنة
         const bgImage = card.querySelector('.product-img').style.backgroundImage;
         const safeImageUrl = bgImage.match(/url\(["']?(.*?)["']?\)/)?.[1] || "";
         
         const productData = {
             id: card.getAttribute('data-id'), 
-            name: card.querySelector('h3').textContent,
+            name: card.querySelector('h3').textContent.trim(),
             price: parseInt(card.querySelector('.price').textContent.replace(/\D/g, '')) || 0,
             image: safeImageUrl,
             quantity: 1
@@ -380,7 +385,7 @@ async function fetchProducts() {
             return;
         }
 
-        let htmlStr = ''; // تجميع الكروت في متغير لزيادة سرعة الأداء
+        let htmlStr = ''; 
         querySnapshot.forEach((doc) => {
             const product = doc.data();
             htmlStr += `
@@ -402,7 +407,7 @@ async function fetchProducts() {
             `;
         });
         
-        productsGrid.innerHTML = htmlStr; // رسم الكروت مرة واحدة
+        productsGrid.innerHTML = htmlStr; 
         
     } catch (error) {
         productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--danger);">حدث خطأ أثناء تحميل المنتجات.</p>';
