@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
 import { getFirestore, collection, getDocs, orderBy, query, where } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
 import { 
     getAuth, 
     createUserWithEmailAndPassword, 
@@ -53,13 +54,12 @@ const myOrdersBtn = document.getElementById('myOrdersBtn');
 const ordersModal = document.getElementById('ordersModal');
 const ordersList = document.getElementById('ordersList');
 
-// استدعاء السلة من التخزين المحلي
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
+// مصفوفة السلة
+let cart = []; 
 
 // ==========================================
 // 2. نظام تسجيل الدخول والحسابات
 // ==========================================
-
 onAuthStateChanged(auth, (user) => {
     if (user) {
         if(loginBtn) loginBtn.style.display = 'none';
@@ -96,17 +96,21 @@ if(doSignupBtn) {
         const name = document.getElementById('signupName').value;
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
+
         if(!name || !email || !password) return alert("يرجى ملء جميع الحقول");
 
+        const originalText = doSignupBtn.textContent;
         doSignupBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإنشاء...';
+
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(userCredential.user, { displayName: name });
             alert("تم إنشاء حسابك بنجاح!");
         } catch (error) {
+            console.error(error);
             alert("خطأ: " + error.message);
         } finally {
-            doSignupBtn.textContent = 'إنشاء الحساب';
+            doSignupBtn.textContent = originalText;
         }
     });
 }
@@ -117,15 +121,19 @@ if(doLoginBtn) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
+
         if(!email || !password) return alert("يرجى إدخال البريد وكلمة المرور");
 
+        const originalText = doLoginBtn.textContent;
         doLoginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الدخول...';
+
         try {
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
+            console.error(error);
             alert("بيانات الدخول غير صحيحة!");
         } finally {
-            doLoginBtn.textContent = 'تسجيل الدخول';
+            doLoginBtn.textContent = originalText;
         }
     });
 }
@@ -142,21 +150,8 @@ if(logoutBtn) {
 }
 
 // ==========================================
-// 3. أكواد الـ UI والنوافذ المنبثقة
+// 3. النوافذ المنبثقة والقوائم
 // ==========================================
-if (window.innerWidth <= 768 && categoriesDropdown) document.body.appendChild(categoriesDropdown);
-
-if (categoriesBtn) categoriesBtn.addEventListener('click', (e) => { e.stopPropagation(); categoriesDropdown.classList.toggle('show'); });
-
-window.addEventListener('click', (e) => {
-    if (categoriesDropdown && categoriesDropdown.classList.contains('show')) {
-        if (!e.target.closest('.dropdown-content') && !e.target.closest('#mobileCategoriesBtn') && !e.target.closest('#categoriesBtn')) {
-            categoriesDropdown.classList.remove('show');
-            if (mobileCategoriesBtn) mobileCategoriesBtn.classList.remove('active');
-        }
-    }
-});
-
 function openModal(modal) {
     if (overlay && modal) {
         overlay.style.display = 'block';
@@ -166,7 +161,10 @@ function openModal(modal) {
 
 function closeAllModals() {
     if (overlay) overlay.style.display = 'none';
-    [loginModal, signupModal, cartModal, ordersModal].forEach(m => { if(m) m.style.display = 'none'; });
+    if (loginModal) loginModal.style.display = 'none';
+    if (signupModal) signupModal.style.display = 'none';
+    if (cartModal) cartModal.style.display = 'none';
+    if (ordersModal) ordersModal.style.display = 'none';
     if (mobileAccountBtn) mobileAccountBtn.classList.remove('active');
 }
 
@@ -178,161 +176,117 @@ if (overlay) overlay.addEventListener('click', closeAllModals);
 if (showSignup) showSignup.addEventListener('click', () => { loginModal.style.display = 'none'; openModal(signupModal); });
 if (showLogin) showLogin.addEventListener('click', () => { signupModal.style.display = 'none'; openModal(loginModal); });
 
-if (mobileAccountBtn) mobileAccountBtn.addEventListener('click', (e) => { e.preventDefault(); closeAllModals(); openModal(loginModal); navItems.forEach(item => item.classList.remove('active')); mobileAccountBtn.classList.add('active'); });
+if (categoriesBtn) {
+    categoriesBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        categoriesDropdown.classList.toggle('show');
+    });
+}
 
-if (mobileCategoriesBtn) mobileCategoriesBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeAllModals(); if (categoriesDropdown) categoriesDropdown.classList.toggle('show'); navItems.forEach(item => item.classList.remove('active')); if (categoriesDropdown && categoriesDropdown.classList.contains('show')) mobileCategoriesBtn.classList.add('active'); });
-
-const homeBtn = document.querySelector('.nav-item[href="index.html"]');
-if (homeBtn) homeBtn.addEventListener('click', () => { navItems.forEach(item => item.classList.remove('active')); homeBtn.classList.add('active'); });
-
-document.querySelectorAll('.sub-cat').forEach(item => { item.addEventListener('click', function() { document.querySelectorAll('.sub-cat').forEach(el => el.classList.remove('active')); this.classList.add('active'); }); });
+window.addEventListener('click', (e) => {
+    if (categoriesDropdown && categoriesDropdown.classList.contains('show')) {
+        if (!e.target.closest('.dropdown-content') && !e.target.closest('#mobileCategoriesBtn') && !e.target.closest('#categoriesBtn')) {
+            categoriesDropdown.classList.remove('show');
+            if (mobileCategoriesBtn) mobileCategoriesBtn.classList.remove('active');
+        }
+    }
+});
 
 // ==========================================
-// 4. منطق سلة المشتريات (Cart Logic)
+// 4. منطق سلة المشتريات (الإصدار المصحح بالكامل)
 // ==========================================
+function attachAddToCartEvents() {
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const card = this.closest('.card');
+            
+            // التأكد من جلب البيانات بشكل سليم
+            const productData = {
+                id: card.getAttribute('data-id'), 
+                name: card.querySelector('h3').textContent,
+                price: parseInt(card.querySelector('.price').textContent.replace(/\D/g, '')),
+                image: card.querySelector('.product-img').style.backgroundImage.slice(5, -2).replace(/"/g, ""),
+                quantity: 1
+            };
+
+            if(!productData.id) {
+                console.error("Error: Product ID is missing!");
+                return;
+            }
+
+            const existingProductIndex = cart.findIndex(item => item.id === productData.id);
+
+            if (existingProductIndex > -1) {
+                cart[existingProductIndex].quantity += 1;
+            } else {
+                cart.push(productData);
+            }
+
+            updateCartUI(); 
+
+            // تأثير زرار الـ Check
+            const originalIcon = this.innerHTML;
+            this.innerHTML = '<i class="fa-solid fa-check"></i>';
+            setTimeout(() => { this.innerHTML = originalIcon; }, 1000);
+        });
+    });
+}
 
 function updateCartUI() {
     const cartItemsContainer = document.querySelector('.cart-items');
     const totalPriceElement = document.querySelector('.total-price span:last-child');
+    const cartBadge = document.querySelector('.cart-badge');
 
-    if (!cartItemsContainer || !totalPriceElement) return;
-
-    const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
-    if (cartBadge) cartBadge.textContent = totalQuantity;
-
-    if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">العربة فارغة حالياً</p>';
-        totalPriceElement.textContent = '0 ج.م';
-        localStorage.setItem('cart', JSON.stringify(cart));
-        return;
-    }
-
-    let cartHtml = '';
-    let subtotal = 0;
+    if(cartBadge) cartBadge.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    cartItemsContainer.innerHTML = '';
+    let total = 0;
 
     cart.forEach((item, index) => {
-        subtotal += item.price * item.quantity;
-        cartHtml += `
+        total += item.price * item.quantity;
+        cartItemsContainer.innerHTML += `
             <div class="cart-item">
                 <div class="item-info">
-                    <img src="${item.image}" alt="${item.name}" style="width:55px; height:55px; object-fit:cover; border-radius:8px;">
+                    <img src="${item.image}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">
                     <div>
-                        <h4 style="font-size: 14px; margin-bottom: 5px;">${item.name}</h4>
-                        <span class="item-price" style="color: var(--primary); font-weight: bold;">${item.price} ج.م</span>
+                        <h4>${item.name}</h4>
+                        <span class="item-price">${item.price} ج.م</span>
                     </div>
                 </div>
                 <div class="item-actions">
                     <div class="quantity-control">
-                        <button onclick="changeQuantity(${index}, 1)"><i class="fa-solid fa-plus"></i></button>
+                        <button onclick="window.changeQuantity(${index}, -1)"><i class="fa-solid fa-minus"></i></button>
                         <span>${item.quantity}</span>
-                        <button onclick="changeQuantity(${index}, -1)"><i class="fa-solid fa-minus"></i></button>
+                        <button onclick="window.changeQuantity(${index}, 1)"><i class="fa-solid fa-plus"></i></button>
                     </div>
-                    <button onclick="removeFromCart(${index})" class="delete-btn" title="حذف">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    <button onclick="window.removeFromCart(${index})" class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             </div>
         `;
     });
 
-    cartItemsContainer.innerHTML = cartHtml;
-
-    const delivery = 30; // سعر التوصيل الثابت
-    const finalTotal = subtotal + delivery;
-    totalPriceElement.textContent = finalTotal + ' ج.م';
-    
-    // حفظ السلة في التخزين المحلي
-    localStorage.setItem('cart', JSON.stringify(cart));
+    const delivery = cart.length > 0 ? 30 : 0;
+    if(totalPriceElement) totalPriceElement.textContent = (total + delivery) + ' ج.م';
 }
 
-// توفير الدوال للـ HTML
+// الدوال العامة (Global) لتعمل من داخل الـ HTML بشكل صحيح
 window.changeQuantity = function(index, delta) {
     if (cart[index].quantity + delta > 0) {
         cart[index].quantity += delta;
+        updateCartUI();
     } else {
-        cart.splice(index, 1);
+        // لو الكمية وصلت لصفر، احذف المنتج
+        window.removeFromCart(index);
     }
-    updateCartUI();
 };
 
 window.removeFromCart = function(index) {
-    cart.splice(index, 1);
-    updateCartUI();
+    cart.splice(index, 1); 
+    updateCartUI(); 
 };
 
 // ==========================================
-// الحدث الشامل للإضافة للسلة (Event Delegation)
-// ==========================================
-document.addEventListener('click', function(e) {
-    // 1. نبحث عن زرار الإضافة اللي تم الضغط عليه
-    const btn = e.target.closest('.add-to-cart-btn');
-    if (!btn) return; // لو الضغطة في مكان تاني يقف هنا
-
-    e.preventDefault();
-    
-    // 2. نجيب الكارت الأب للزرار ده
-    const card = btn.closest('.card');
-    if (!card) return;
-
-    try {
-        // استخراج الرابط بأمان
-        const bgImage = card.querySelector('.product-img').style.backgroundImage;
-        const safeImageUrl = bgImage.match(/url\(["']?(.*?)["']?\)/)?.[1] || "";
-        
-        // تجهيز بيانات المنتج
-        const productData = {
-            id: card.getAttribute('data-id'), 
-            name: card.querySelector('h3').textContent.trim(),
-            price: parseInt(card.querySelector('.price').textContent.replace(/\D/g, '')) || 0,
-            image: safeImageUrl,
-            quantity: 1
-        };
-
-        // فحص هل المنتج موجود مسبقاً
-        const existingIndex = cart.findIndex(item => item.id === productData.id);
-
-        if (existingIndex > -1) {
-            cart[existingIndex].quantity += 1;
-        } else {
-            cart.push(productData);
-        }
-
-        // تحديث واجهة السلة
-        updateCartUI();
-
-        // تأثير بصري جميل للزرار للتأكيد
-        const originalIcon = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i>';
-        btn.style.backgroundColor = 'var(--primary)';
-        btn.style.color = '#fff';
-        setTimeout(() => { 
-            btn.innerHTML = originalIcon; 
-            btn.style.backgroundColor = '';
-            btn.style.color = '';
-        }, 1000);
-
-    } catch (err) {
-        console.error("حدث خطأ أثناء الإضافة للسلة:", err);
-    }
-});
-
-// إتمام الطلب (مؤقتاً)
-document.querySelectorAll('.checkout-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if(cart.length === 0) return alert("عربة التسوق فارغة!");
-        
-        const originalText = this.textContent;
-        this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري المعالجة...';
-        setTimeout(() => {
-            this.textContent = originalText;
-            closeAllModals();
-        }, 1500);
-    });
-});
-
-// ==========================================
-// 5. جلب المنتجات من الفايربيس (ديناميكياً)
+// 5. جلب المنتجات والطلبات
 // ==========================================
 async function fetchProducts() {
     const productsGrid = document.getElementById('productsGrid');
@@ -341,47 +295,47 @@ async function fetchProducts() {
     try {
         const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
+        productsGrid.innerHTML = '';
         
         if(querySnapshot.empty) {
             productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--gray);">لا توجد منتجات مضافة حتى الآن.</p>';
             return;
         }
 
-        // تجميع المنتجات في متغير ثم وضعها مرة واحدة في الـ HTML (لتحسين الأداء)
-        let htmlStr = ''; 
         querySnapshot.forEach((doc) => {
             const product = doc.data();
-            htmlStr += `
-            <div class="card" data-id="${doc.id}">
-                <a href="product.html?id=${doc.id}" class="product-link">
-                    <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
-                </a>
-                <div class="card-content">
+            // تم إضافة data-id="${doc.id}" لحل مشكلة السلة
+            const card = `
+                <div class="card" data-id="${doc.id}">
                     <a href="product.html?id=${doc.id}" class="product-link">
-                        <h3>${product.name}</h3>
+                        <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
                     </a>
-                    <p class="brand"><i class="fa-solid fa-tag"></i> الماركة: ${product.brand}</p>
-                    <div class="card-footer">
-                        <span class="price">${product.price} ج.م</span>
-                        <button class="add-to-cart-btn"><i class="fa-solid fa-cart-plus"></i></button>
+                    <div class="card-content">
+                        <a href="product.html?id=${doc.id}" class="product-link">
+                            <h3>${product.name}</h3>
+                        </a>
+                        <p class="brand"><i class="fa-solid fa-tag"></i> الماركة: ${product.brand}</p>
+                        <div class="card-footer">
+                            <span class="price">${product.price} ج.م</span>
+                            <button class="add-to-cart-btn"><i class="fa-solid fa-cart-plus"></i></button>
+                        </div>
                     </div>
                 </div>
-            </div>
             `;
+            productsGrid.innerHTML += card;
         });
         
-        // رسم جميع المنتجات في الصفحة
-        productsGrid.innerHTML = htmlStr;
-        
+        // ربط أزرار "أضف للسلة" بعد تحميل المنتجات
+        attachAddToCartEvents();
+
     } catch (error) {
         productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--danger);">حدث خطأ أثناء تحميل المنتجات.</p>';
         console.error(error);
     }
 }
 
-// ==========================================
-// 6. جلب الطلبات الخاصة بالمستخدم
-// ==========================================
+fetchProducts();
+
 async function fetchMyOrders() {
     const user = auth.currentUser;
     if (!user) return;
@@ -389,27 +343,25 @@ async function fetchMyOrders() {
     try {
         const q = query(collection(db, "orders"), where("userId", "==", user.uid), orderBy("orderDate", "desc"));
         const querySnapshot = await getDocs(q);
-        ordersList.innerHTML = querySnapshot.empty ? '<p style="text-align:center;">لا توجد طلبات.</p>' : '';
+        ordersList.innerHTML = querySnapshot.empty ? '<p style="text-align: center;">لا توجد طلبات سابقة.</p>' : '';
         querySnapshot.forEach((doc) => {
             const order = doc.data();
             ordersList.innerHTML += `
                 <div class="order-card">
-                    <div class="order-header"><strong>طلب #${doc.id.substring(0,6)}</strong></div>
+                    <div class="order-header"><strong>طلب #${doc.id.substring(0,6).toUpperCase()}</strong></div>
                     <p>الإجمالي: ${order.totalAmount} ج.م</p>
                 </div>`;
         });
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+        ordersList.innerHTML = '<p style="color:red; text-align:center;">حدث خطأ في تحميل الطلبات</p>';
+    }
 }
 
 if(myOrdersBtn) {
     myOrdersBtn.addEventListener('click', () => {
         closeAllModals();
-        document.getElementById('overlay').style.display = 'block';
-        ordersModal.style.display = 'block';
+        openModal(ordersModal);
         fetchMyOrders();
     });
 }
-
-// تنفيذ التشغيل الأساسي عند بدء فتح الصفحة
-fetchProducts();
-updateCartUI();
