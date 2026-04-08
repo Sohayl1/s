@@ -338,19 +338,24 @@ async function fetchProducts() {
 
         querySnapshot.forEach((doc) => {
             const product = doc.data();
-            const card = `
-                <div class="card">
-                    <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
-                    <div class="card-content">
-                        <h3>${product.name}</h3>
-                        <p class="brand"><i class="fa-solid fa-tag"></i> الماركة: ${product.brand}</p>
-                        <div class="card-footer">
-                            <span class="price">${product.price} ج.م</span>
-                            <button class="add-to-cart-btn"><i class="fa-solid fa-cart-plus"></i></button>
-                        </div>
-                    </div>
-                </div>
-            `;
+// استبدل الجزء ده جوه الـ forEach في دالة fetchProducts
+const card = `
+    <div class="card">
+        <a href="product.html?id=${doc.id}" class="product-link">
+            <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
+        </a>
+        <div class="card-content">
+            <a href="product.html?id=${doc.id}" class="product-link">
+                <h3>${product.name}</h3>
+            </a>
+            <p class="brand"><i class="fa-solid fa-tag"></i> الماركة: ${product.brand}</p>
+            <div class="card-footer">
+                <span class="price">${product.price} ج.م</span>
+                <button class="add-to-cart-btn"><i class="fa-solid fa-cart-plus"></i></button>
+            </div>
+        </div>
+    </div>
+`;
             productsGrid.innerHTML += card;
         });
         attachAddToCartEvents();
