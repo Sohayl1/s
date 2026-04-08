@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
+// نفس إعدادات مشروعك
 const firebaseConfig = {
     apiKey: "AIzaSyDuVrnqnfRS9XdUzQMgKQtZWExxxDbqQmw",
     authDomain: "nourstationary.firebaseapp.com",
@@ -21,9 +22,11 @@ const successMsg = document.getElementById('successMessage');
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // تغيير حالة الزرار
     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
     submitBtn.disabled = true;
 
+    // سحب البيانات من حقول الإدخال
     const productName = document.getElementById('productName').value;
     const productBrand = document.getElementById('productBrand').value;
     const productCategory = document.getElementById('productCategory').value;
@@ -32,6 +35,7 @@ form.addEventListener('submit', async (e) => {
     const productDesc = document.getElementById('productDesc').value;
 
     try {
+        // إضافة المنتج لقاعدة البيانات (كوليكشن اسمه products)
         await addDoc(collection(db, "products"), {
             name: productName,
             brand: productBrand,
@@ -39,9 +43,10 @@ form.addEventListener('submit', async (e) => {
             price: productPrice,
             imageUrl: productImage,
             description: productDesc,
-            createdAt: new Date()
+            createdAt: new Date().toISOString() // لحفظ وقت الإضافة
         });
 
+        // رسالة النجاح
         form.reset();
         successMsg.style.display = 'block';
         
@@ -50,8 +55,8 @@ form.addEventListener('submit', async (e) => {
         }, 3000);
 
     } catch (error) {
-        console.error("Error adding document: ", error);
-        alert("حدث خطأ أثناء حفظ المنتج.");
+        console.error("Error adding product: ", error);
+        alert("حدث خطأ أثناء حفظ المنتج، تأكد من اتصالك بالإنترنت.");
     } finally {
         submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج في قاعدة البيانات';
         submitBtn.disabled = false;

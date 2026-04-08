@@ -235,9 +235,8 @@ async function fetchProducts() {
     if(!productsGrid) return; 
 
     try {
-        // ترتيب المنتجات بالأحدث
-        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        // جلب المنتجات من نفس الكوليكشن (products)
+        const querySnapshot = await getDocs(collection(db, "products"));
         productsGrid.innerHTML = '';
         
         if(querySnapshot.empty) {
@@ -245,6 +244,7 @@ async function fetchProducts() {
             return;
         }
 
+        // تحويل البيانات لكروت منتجات
         querySnapshot.forEach((doc) => {
             const product = doc.data();
             const card = `
@@ -267,12 +267,14 @@ async function fetchProducts() {
             productsGrid.innerHTML += card;
         });
         
+        // تفعيل أزرار السلة للمنتجات الجديدة
         attachAddToCartEvents();
         
     } catch (error) {
-        productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--danger);">حدث خطأ أثناء تحميل المنتجات. تأكد من اتصالك بالإنترنت.</p>';
+        productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--danger);">حدث خطأ أثناء تحميل المنتجات.</p>';
         console.error("Firebase fetch error:", error);
     }
 }
 
+// تنفيذ الدالة عند فتح الصفحة
 fetchProducts();
