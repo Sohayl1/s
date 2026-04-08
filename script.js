@@ -12,7 +12,6 @@ import {
     signInWithPopup 
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
-// إعدادات الفاير بيس
 const firebaseConfig = {
     apiKey: "AIzaSyDuVrnqnfRS9XdUzQMgKQtZWExxxDbqQmw",
     authDomain: "nourstationary.firebaseapp.com",
@@ -27,7 +26,7 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app); 
 const db = getFirestore(app);
 const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider(); 
+const googleProvider = new GoogleAuthProvider();
 
 // ==========================================
 // 1. تعريف عناصر الـ DOM الأساسية
@@ -58,7 +57,7 @@ const ordersList = document.getElementById('ordersList');
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // ==========================================
-// 2. نظام تسجيل الدخول والحسابات (Authentication)
+// 2. نظام تسجيل الدخول والحسابات
 // ==========================================
 
 onAuthStateChanged(auth, (user) => {
@@ -151,7 +150,7 @@ if(logoutBtn) {
 }
 
 // ==========================================
-// 3. باقي أكواد الـ UI (القوائم والنافذة المنبثقة)
+// 3. أكواد الـ UI والنوافذ المنبثقة
 // ==========================================
 if (window.innerWidth <= 768 && categoriesDropdown) document.body.appendChild(categoriesDropdown);
 
@@ -192,19 +191,8 @@ if (cartBtn) cartBtn.addEventListener('click', () => { closeAllModals(); openMod
 if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', () => { closeAllModals(); openModal(loginModal); });
 if (overlay) overlay.addEventListener('click', closeAllModals);
 
-if (showSignup) {
-    showSignup.addEventListener('click', () => { 
-        loginModal.style.display = 'none'; 
-        openModal(signupModal); 
-    });
-}
-
-if (showLogin) {
-    showLogin.addEventListener('click', () => { 
-        signupModal.style.display = 'none'; 
-        openModal(loginModal); 
-    });
-}
+if (showSignup) showSignup.addEventListener('click', () => { loginModal.style.display = 'none'; openModal(signupModal); });
+if (showLogin) showLogin.addEventListener('click', () => { signupModal.style.display = 'none'; openModal(loginModal); });
 
 if (mobileAccountBtn) {
     mobileAccountBtn.addEventListener('click', (e) => {
@@ -245,7 +233,7 @@ document.querySelectorAll('.sub-cat').forEach(item => {
 });
 
 // ==========================================
-// 4. منطق سلة المشتريات (Cart Logic الذكي)
+// 4. منطق سلة المشتريات (Cart Logic)
 // ==========================================
 
 function updateCartUI() {
@@ -255,11 +243,9 @@ function updateCartUI() {
 
     if (!cartItemsContainer || !totalPriceElement) return;
 
-    // 1. تحديث رقم الإشعار فوق
     const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
     if (cartBadge) cartBadge.textContent = totalQuantity;
 
-    // 2. التحقق لو العربة فارغة
     if (cart.length === 0) {
         cartItemsContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">العربة فارغة حالياً</p>';
         totalPriceElement.textContent = '0 ج.م';
@@ -267,7 +253,6 @@ function updateCartUI() {
         return;
     }
 
-    // 3. بناء محتوى السلة
     let cartHtml = '';
     let subtotal = 0;
 
@@ -298,16 +283,14 @@ function updateCartUI() {
 
     cartItemsContainer.innerHTML = cartHtml;
 
-    // 4. حساب الإجمالي مع التوصيل
-    const delivery = 30; // التوصيل
+    const delivery = 30;
     const finalTotal = subtotal + delivery;
     totalPriceElement.textContent = finalTotal + ' ج.م';
     
-    // حفظ التحديثات في المتصفح
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// الدوال دي لازم تكون متاحة عالمياً
+// جعل الدوال متاحة عالمياً
 window.changeQuantity = function(index, delta) {
     if (cart[index].quantity + delta > 0) {
         cart[index].quantity += delta;
@@ -322,38 +305,50 @@ window.removeFromCart = function(index) {
     updateCartUI();
 };
 
-function attachAddToCartEvents() {
-    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const card = this.closest('.card');
-            
-            const productData = {
-                id: card.getAttribute('data-id'), 
-                name: card.querySelector('h3').textContent,
-                price: parseInt(card.querySelector('.price').textContent.replace(/\D/g, '')),
-                image: card.querySelector('.product-img').style.backgroundImage.slice(5, -2).replace(/"/g, ""),
-                quantity: 1
-            };
+// ==========================================
+// الحدث الشامل للإضافة للسلة (Event Delegation)
+// ==========================================
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.add-to-cart-btn');
+    if (!btn) return; // لو الضغطة مش على زرار السلة، الكود يقف هنا
+    
+    e.preventDefault();
+    const card = btn.closest('.card');
+    
+    try {
+        // استخراج الرابط بطريقة آمنة (Regex) لتجنب الأخطاء
+        const bgImage = card.querySelector('.product-img').style.backgroundImage;
+        const safeImageUrl = bgImage.match(/url\(["']?(.*?)["']?\)/)?.[1] || "";
+        
+        const productData = {
+            id: card.getAttribute('data-id'), 
+            name: card.querySelector('h3').textContent,
+            price: parseInt(card.querySelector('.price').textContent.replace(/\D/g, '')) || 0,
+            image: safeImageUrl,
+            quantity: 1
+        };
 
-            const existingProductIndex = cart.findIndex(item => item.id === productData.id);
+        const existingProductIndex = cart.findIndex(item => item.id === productData.id);
 
-            if (existingProductIndex > -1) {
-                cart[existingProductIndex].quantity += 1;
-            } else {
-                cart.push(productData);
-            }
+        if (existingProductIndex > -1) {
+            cart[existingProductIndex].quantity += 1;
+        } else {
+            cart.push(productData);
+        }
 
-            updateCartUI();
+        updateCartUI();
 
-            const originalIcon = this.innerHTML;
-            this.innerHTML = '<i class="fa-solid fa-check"></i>';
-            setTimeout(() => { this.innerHTML = originalIcon; }, 1000);
-        });
-    });
-}
+        // تأثير بصري للزرار
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+        setTimeout(() => { btn.innerHTML = originalIcon; }, 1000);
+        
+    } catch (err) {
+        console.error("خطأ أثناء سحب بيانات المنتج:", err);
+    }
+});
 
-// زر إتمام الطلب 
+
 document.querySelectorAll('.checkout-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -364,7 +359,6 @@ document.querySelectorAll('.checkout-btn').forEach(btn => {
         setTimeout(() => {
             this.textContent = originalText;
             closeAllModals();
-            // سيتم ربط هذا الزر بصفحة الدفع لاحقاً
         }, 1500);
     });
 });
@@ -380,16 +374,16 @@ async function fetchProducts() {
     try {
         const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
-        productsGrid.innerHTML = '';
         
         if(querySnapshot.empty) {
             productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--gray);">لا توجد منتجات مضافة حتى الآن.</p>';
             return;
         }
 
+        let htmlStr = ''; // تجميع الكروت في متغير لزيادة سرعة الأداء
         querySnapshot.forEach((doc) => {
             const product = doc.data();
-            const card = `
+            htmlStr += `
             <div class="card" data-id="${doc.id}">
                 <a href="product.html?id=${doc.id}" class="product-link">
                     <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
@@ -406,9 +400,10 @@ async function fetchProducts() {
                 </div>
             </div>
             `;
-            productsGrid.innerHTML += card;
         });
-        attachAddToCartEvents();
+        
+        productsGrid.innerHTML = htmlStr; // رسم الكروت مرة واحدة
+        
     } catch (error) {
         productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--danger);">حدث خطأ أثناء تحميل المنتجات.</p>';
         console.error(error);
@@ -445,4 +440,4 @@ if(myOrdersBtn) {
 
 // تنفيذ الدوال عند فتح الصفحة
 fetchProducts();
-updateCartUI(); // استرجاع السلة وعرض المنتجات المخزنة فوراً
+updateCartUI();
