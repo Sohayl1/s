@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
-import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, orderBy, query, where } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
 // مكتبات الـ Auth مع إضافة GoogleAuthProvider و Popup
 import { 
     getAuth, 
@@ -50,6 +51,9 @@ const cartBadge = document.querySelector('.cart-badge');
 const navItems = document.querySelectorAll('.nav-item');
 const mobileAccountBtn = document.getElementById('mobileAccountBtn');
 const mobileCategoriesBtn = document.getElementById('mobileCategoriesBtn');
+const myOrdersBtn = document.getElementById('myOrdersBtn');
+const ordersModal = document.getElementById('ordersModal');
+const ordersList = document.getElementById('ordersList');
 
 // ==========================================
 // 2. نظام تسجيل الدخول والحسابات (Authentication)
@@ -357,3 +361,32 @@ async function fetchProducts() {
 }
 
 fetchProducts();
+
+async function fetchMyOrders() {
+    const user = auth.currentUser;
+    if (!user) return;
+    ordersList.innerHTML = '<p style="text-align: center;">جاري التحميل...</p>';
+    try {
+        const q = query(collection(db, "orders"), where("userId", "==", user.uid), orderBy("orderDate", "desc"));
+        const querySnapshot = await getDocs(q);
+        ordersList.innerHTML = querySnapshot.empty ? '<p>لا توجد طلبات.</p>' : '';
+        querySnapshot.forEach((doc) => {
+            const order = doc.data();
+            ordersList.innerHTML += `
+                <div class="order-card">
+                    <div class="order-header"><strong>طلب #${doc.id.substring(0,6)}</strong></div>
+                    <p>الإجمالي: ${order.totalAmount} ج.م</p>
+                </div>`;
+        });
+    } catch (e) { console.error(e); }
+}
+
+if(myOrdersBtn) {
+    myOrdersBtn.addEventListener('click', () => {
+        closeAllModals();
+        document.getElementById('overlay').style.display = 'block';
+        ordersModal.style.display = 'block';
+        fetchMyOrders();
+    });
+}
+

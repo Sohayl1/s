@@ -37,7 +37,9 @@
             
             <button id="loginBtn" class="login-btn"><i class="fa-regular fa-user"></i> تسجيل الدخول</button>
 
-
+<button id="myOrdersBtn" class="icon-btn" style="display: none; color: var(--primary);" title="طلباتي">
+    <i class="fa-solid fa-clipboard-list"></i>
+</button>
             
             <button id="userProfileBtn" class="login-btn" style="display: none; background-color: var(--secondary);">
                 <i class="fa-regular fa-user"></i> <span id="userNameDisplay">حسابي</span>
@@ -153,6 +155,14 @@
                 </div>
             </div>
         </section>
+
+<div id="ordersModal" class="modal">
+    <h2 class="modal-title"><i class="fa-solid fa-clipboard-list"></i> سجل طلباتي</h2>
+    <div id="ordersList" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+        <p style="text-align: center; color: gray;">جاري تحميل طلباتك...</p>
+    </div>
+</div>
+
     </main>
 
     <footer>
