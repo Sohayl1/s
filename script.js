@@ -53,7 +53,7 @@ const myOrdersBtn = document.getElementById('myOrdersBtn');
 const ordersModal = document.getElementById('ordersModal');
 const ordersList = document.getElementById('ordersList');
 
-// استدعاء السلة من التخزين المحلي أو إنشاء مصفوفة فارغة
+// استدعاء السلة من التخزين المحلي
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // ==========================================
@@ -84,7 +84,7 @@ if(googleLoginBtn) {
             alert("تم تسجيل الدخول بجوجل بنجاح!");
         } catch (error) {
             console.error(error);
-            alert("حدث خطأ أثناء الدخول بجوجل، تأكد من فتح الموقع عبر سيرفر.");
+            alert("حدث خطأ أثناء الدخول بجوجل.");
         }
     });
 }
@@ -96,21 +96,17 @@ if(doSignupBtn) {
         const name = document.getElementById('signupName').value;
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
-
         if(!name || !email || !password) return alert("يرجى ملء جميع الحقول");
 
-        const originalText = doSignupBtn.textContent;
         doSignupBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإنشاء...';
-
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(userCredential.user, { displayName: name });
             alert("تم إنشاء حسابك بنجاح!");
         } catch (error) {
-            console.error(error);
             alert("خطأ: " + error.message);
         } finally {
-            doSignupBtn.textContent = originalText;
+            doSignupBtn.textContent = 'إنشاء الحساب';
         }
     });
 }
@@ -121,19 +117,15 @@ if(doLoginBtn) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
-
         if(!email || !password) return alert("يرجى إدخال البريد وكلمة المرور");
 
-        const originalText = doLoginBtn.textContent;
         doLoginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الدخول...';
-
         try {
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
-            console.error(error);
             alert("بيانات الدخول غير صحيحة!");
         } finally {
-            doLoginBtn.textContent = originalText;
+            doLoginBtn.textContent = 'تسجيل الدخول';
         }
     });
 }
@@ -154,12 +146,7 @@ if(logoutBtn) {
 // ==========================================
 if (window.innerWidth <= 768 && categoriesDropdown) document.body.appendChild(categoriesDropdown);
 
-if (categoriesBtn) {
-    categoriesBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        categoriesDropdown.classList.toggle('show');
-    });
-}
+if (categoriesBtn) categoriesBtn.addEventListener('click', (e) => { e.stopPropagation(); categoriesDropdown.classList.toggle('show'); });
 
 window.addEventListener('click', (e) => {
     if (categoriesDropdown && categoriesDropdown.classList.contains('show')) {
@@ -179,10 +166,7 @@ function openModal(modal) {
 
 function closeAllModals() {
     if (overlay) overlay.style.display = 'none';
-    if (loginModal) loginModal.style.display = 'none';
-    if (signupModal) signupModal.style.display = 'none';
-    if (cartModal) cartModal.style.display = 'none';
-    if (ordersModal) ordersModal.style.display = 'none';
+    [loginModal, signupModal, cartModal, ordersModal].forEach(m => { if(m) m.style.display = 'none'; });
     if (mobileAccountBtn) mobileAccountBtn.classList.remove('active');
 }
 
@@ -194,43 +178,14 @@ if (overlay) overlay.addEventListener('click', closeAllModals);
 if (showSignup) showSignup.addEventListener('click', () => { loginModal.style.display = 'none'; openModal(signupModal); });
 if (showLogin) showLogin.addEventListener('click', () => { signupModal.style.display = 'none'; openModal(loginModal); });
 
-if (mobileAccountBtn) {
-    mobileAccountBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeAllModals();
-        openModal(loginModal);
-        navItems.forEach(item => item.classList.remove('active'));
-        mobileAccountBtn.classList.add('active');
-    });
-}
+if (mobileAccountBtn) mobileAccountBtn.addEventListener('click', (e) => { e.preventDefault(); closeAllModals(); openModal(loginModal); navItems.forEach(item => item.classList.remove('active')); mobileAccountBtn.classList.add('active'); });
 
-if (mobileCategoriesBtn) {
-    mobileCategoriesBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        closeAllModals();
-        if (categoriesDropdown) categoriesDropdown.classList.toggle('show');
-        navItems.forEach(item => item.classList.remove('active'));
-        if (categoriesDropdown && categoriesDropdown.classList.contains('show')) {
-            mobileCategoriesBtn.classList.add('active');
-        }
-    });
-}
+if (mobileCategoriesBtn) mobileCategoriesBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeAllModals(); if (categoriesDropdown) categoriesDropdown.classList.toggle('show'); navItems.forEach(item => item.classList.remove('active')); if (categoriesDropdown && categoriesDropdown.classList.contains('show')) mobileCategoriesBtn.classList.add('active'); });
 
 const homeBtn = document.querySelector('.nav-item[href="index.html"]');
-if (homeBtn) {
-    homeBtn.addEventListener('click', () => {
-        navItems.forEach(item => item.classList.remove('active'));
-        homeBtn.classList.add('active');
-    });
-}
+if (homeBtn) homeBtn.addEventListener('click', () => { navItems.forEach(item => item.classList.remove('active')); homeBtn.classList.add('active'); });
 
-document.querySelectorAll('.sub-cat').forEach(item => {
-    item.addEventListener('click', function() {
-        document.querySelectorAll('.sub-cat').forEach(el => el.classList.remove('active'));
-        this.classList.add('active');
-    });
-});
+document.querySelectorAll('.sub-cat').forEach(item => { item.addEventListener('click', function() { document.querySelectorAll('.sub-cat').forEach(el => el.classList.remove('active')); this.classList.add('active'); }); });
 
 // ==========================================
 // 4. منطق سلة المشتريات (Cart Logic)
@@ -239,15 +194,12 @@ document.querySelectorAll('.sub-cat').forEach(item => {
 function updateCartUI() {
     const cartItemsContainer = document.querySelector('.cart-items');
     const totalPriceElement = document.querySelector('.total-price span:last-child');
-    const cartBadge = document.querySelector('.cart-badge');
 
     if (!cartItemsContainer || !totalPriceElement) return;
 
-    // 1. تحديث رقم الإشعار فوق
     const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
     if (cartBadge) cartBadge.textContent = totalQuantity;
 
-    // 2. التحقق لو العربة فارغة
     if (cart.length === 0) {
         cartItemsContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">العربة فارغة حالياً</p>';
         totalPriceElement.textContent = '0 ج.م';
@@ -255,7 +207,6 @@ function updateCartUI() {
         return;
     }
 
-    // 3. بناء محتوى السلة
     let cartHtml = '';
     let subtotal = 0;
 
@@ -286,16 +237,15 @@ function updateCartUI() {
 
     cartItemsContainer.innerHTML = cartHtml;
 
-    // 4. حساب الإجمالي مع التوصيل
-    const delivery = 30; // سعر التوصيل ثابت
+    const delivery = 30; // سعر التوصيل الثابت
     const finalTotal = subtotal + delivery;
     totalPriceElement.textContent = finalTotal + ' ج.م';
     
-    // حفظ التحديثات في المتصفح
+    // حفظ السلة في التخزين المحلي
     localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-// جعل الدوال متاحة عالمياً
+// توفير الدوال للـ HTML
 window.changeQuantity = function(index, delta) {
     if (cart[index].quantity + delta > 0) {
         cart[index].quantity += delta;
@@ -310,21 +260,26 @@ window.removeFromCart = function(index) {
     updateCartUI();
 };
 
+// ==========================================
 // الحدث الشامل للإضافة للسلة (Event Delegation)
+// ==========================================
 document.addEventListener('click', function(e) {
-    // التأكد إن الضغطة كانت على زر السلة أو الأيقونة اللي جواه
+    // 1. نبحث عن زرار الإضافة اللي تم الضغط عليه
     const btn = e.target.closest('.add-to-cart-btn');
-    if (!btn) return; 
-    
+    if (!btn) return; // لو الضغطة في مكان تاني يقف هنا
+
     e.preventDefault();
+    
+    // 2. نجيب الكارت الأب للزرار ده
     const card = btn.closest('.card');
     if (!card) return;
-    
+
     try {
-        // استخراج الرابط بطريقة آمنة
+        // استخراج الرابط بأمان
         const bgImage = card.querySelector('.product-img').style.backgroundImage;
         const safeImageUrl = bgImage.match(/url\(["']?(.*?)["']?\)/)?.[1] || "";
         
+        // تجهيز بيانات المنتج
         const productData = {
             id: card.getAttribute('data-id'), 
             name: card.querySelector('h3').textContent.trim(),
@@ -333,27 +288,35 @@ document.addEventListener('click', function(e) {
             quantity: 1
         };
 
-        const existingProductIndex = cart.findIndex(item => item.id === productData.id);
+        // فحص هل المنتج موجود مسبقاً
+        const existingIndex = cart.findIndex(item => item.id === productData.id);
 
-        if (existingProductIndex > -1) {
-            cart[existingProductIndex].quantity += 1;
+        if (existingIndex > -1) {
+            cart[existingIndex].quantity += 1;
         } else {
             cart.push(productData);
         }
 
+        // تحديث واجهة السلة
         updateCartUI();
 
-        // تأثير بصري للزرار
+        // تأثير بصري جميل للزرار للتأكيد
         const originalIcon = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-check"></i>';
-        setTimeout(() => { btn.innerHTML = originalIcon; }, 1000);
-        
+        btn.style.backgroundColor = 'var(--primary)';
+        btn.style.color = '#fff';
+        setTimeout(() => { 
+            btn.innerHTML = originalIcon; 
+            btn.style.backgroundColor = '';
+            btn.style.color = '';
+        }, 1000);
+
     } catch (err) {
-        console.error("خطأ أثناء سحب بيانات المنتج:", err);
+        console.error("حدث خطأ أثناء الإضافة للسلة:", err);
     }
 });
 
-
+// إتمام الطلب (مؤقتاً)
 document.querySelectorAll('.checkout-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -369,9 +332,8 @@ document.querySelectorAll('.checkout-btn').forEach(btn => {
 });
 
 // ==========================================
-// 5. جلب المنتجات والطلبات من الفاير بيس
+// 5. جلب المنتجات من الفايربيس (ديناميكياً)
 // ==========================================
-
 async function fetchProducts() {
     const productsGrid = document.getElementById('productsGrid');
     if(!productsGrid) return; 
@@ -385,6 +347,7 @@ async function fetchProducts() {
             return;
         }
 
+        // تجميع المنتجات في متغير ثم وضعها مرة واحدة في الـ HTML (لتحسين الأداء)
         let htmlStr = ''; 
         querySnapshot.forEach((doc) => {
             const product = doc.data();
@@ -407,7 +370,8 @@ async function fetchProducts() {
             `;
         });
         
-        productsGrid.innerHTML = htmlStr; 
+        // رسم جميع المنتجات في الصفحة
+        productsGrid.innerHTML = htmlStr;
         
     } catch (error) {
         productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--danger);">حدث خطأ أثناء تحميل المنتجات.</p>';
@@ -415,6 +379,9 @@ async function fetchProducts() {
     }
 }
 
+// ==========================================
+// 6. جلب الطلبات الخاصة بالمستخدم
+// ==========================================
 async function fetchMyOrders() {
     const user = auth.currentUser;
     if (!user) return;
@@ -443,6 +410,6 @@ if(myOrdersBtn) {
     });
 }
 
-// تنفيذ الدوال عند فتح الصفحة
+// تنفيذ التشغيل الأساسي عند بدء فتح الصفحة
 fetchProducts();
 updateCartUI();
