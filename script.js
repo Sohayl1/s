@@ -303,48 +303,49 @@ function attachAddToCartEvents() {
     document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            // سحب بيانات المنتج من "الكارد" اللي فيه الزرار
             const card = this.closest('.card');
-            const product = {
-                id: Date.now(), // رقم عشوائي للتمييز
+            
+            // سحب بيانات المنتج (تأكد إن الـ ID موجود في الـ dataset)
+            const productData = {
+                id: card.getAttribute('data-id'), 
                 name: card.querySelector('h3').textContent,
                 price: parseInt(card.querySelector('.price').textContent.replace(/\D/g, '')),
-                image: card.querySelector('.product-img').style.backgroundImage.slice(5, -2).replace(/"/g, "")
+                image: card.querySelector('.product-img').style.backgroundImage.slice(5, -2).replace(/"/g, ""),
+                quantity: 1 // الكمية الافتراضية عند أول إضافة
             };
 
-            // إضافة المنتج للمصفوفة
-            cart.push(product);
-            
-            // تحديث شكل الزرار مؤقتاً
+            // البحث: هل المنتج ده موجود فعلاً في السلة؟
+            const existingProductIndex = cart.findIndex(item => item.id === productData.id);
+
+            if (existingProductIndex > -1) {
+                // لو موجود.. زود الكمية بس
+                cart[existingProductIndex].quantity += 1;
+            } else {
+                // لو مش موجود.. ضيفه كمنتج جديد
+                cart.push(productData);
+            }
+
+            updateCartUI(); // تحديث شكل السلة
+
+            // تأثير زرار الـ Check
             const originalIcon = this.innerHTML;
             this.innerHTML = '<i class="fa-solid fa-check"></i>';
-            this.style.backgroundColor = 'var(--primary)';
-
-            // تنفيذ دوال التحديث
-            updateCartUI(); 
-
-            setTimeout(() => {
-                this.innerHTML = originalIcon;
-                this.style.backgroundColor = '';
-            }, 1000);
+            setTimeout(() => { this.innerHTML = originalIcon; }, 1000);
         });
     });
 }
+
 function updateCartUI() {
     const cartItemsContainer = document.querySelector('.cart-items');
-    const cartBadge = document.querySelector('.cart-badge');
     const totalPriceElement = document.querySelector('.total-price span:last-child');
+    const cartBadge = document.querySelector('.cart-badge');
 
-    // تحديث الرقم اللي على أيقونة السلة
-    cartBadge.textContent = cart.length;
-
-    // مسح المحتوى القديم ورسم الجديد
+    cartBadge.textContent = cart.reduce((total, item) => total + item.quantity, 0);
     cartItemsContainer.innerHTML = '';
     let total = 0;
 
     cart.forEach((item, index) => {
-        total += item.price;
+        total += item.price * item.quantity;
         cartItemsContainer.innerHTML += `
             <div class="cart-item">
                 <div class="item-info">
@@ -354,15 +355,36 @@ function updateCartUI() {
                         <span class="item-price">${item.price} ج.م</span>
                     </div>
                 </div>
-                <button onclick="removeFromCart(${index})" class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <button onclick="changeQuantity(${index}, -1)"><i class="fa-solid fa-minus"></i></button>
+                        <span>${item.quantity}</span>
+                        <button onclick="changeQuantity(${index}, 1)"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <button onclick="removeFromCart(${index})" class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
             </div>
         `;
     });
 
-    // تحديث الإجمالي (مع إضافة 30 ج توصيل مثلاً)
     const delivery = cart.length > 0 ? 30 : 0;
     totalPriceElement.textContent = (total + delivery) + ' ج.م';
 }
+
+window.changeQuantity = function(index, delta) {
+    if (cart[index].quantity + delta > 0) {
+        cart[index].quantity += delta;
+    } else {
+        // لو قلل الكمية لحد الصفر، امسح المنتج خالص
+        cart.splice(index, 1);
+    }
+    updateCartUI();
+};
+
+window.removeFromCart = function(index) {
+    cart.splice(index, 1);
+    updateCartUI();
+};
 
 // دالة الحذف من السلة
 window.removeFromCart = function(index) {
@@ -387,7 +409,7 @@ async function fetchProducts() {
             const product = doc.data();
 // استبدل الجزء ده جوه الـ forEach في دالة fetchProducts
 const card = `
-    <div class="card">
+<div class="card" data-id="${doc.id}">
         <a href="product.html?id=${doc.id}" class="product-link">
             <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
         </a>
