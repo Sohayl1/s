@@ -340,36 +340,60 @@ function updateCartUI() {
     const totalPriceElement = document.querySelector('.total-price span:last-child');
     const cartBadge = document.querySelector('.cart-badge');
 
-    cartBadge.textContent = cart.reduce((total, item) => total + item.quantity, 0);
-    cartItemsContainer.innerHTML = '';
-    let total = 0;
+    if (!cartItemsContainer || !totalPriceElement) return; // حماية لو العناصر مش موجودة
+
+    // 1. تحديث رقم الإشعار فوق
+    const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
+    if (cartBadge) cartBadge.textContent = totalQuantity;
+
+    // 2. التحقق لو العربة فارغة
+    if (cart.length === 0) {
+        cartItemsContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--gray);">العربة فارغة حالياً</p>';
+        totalPriceElement.textContent = '0 ج.م';
+        return;
+    }
+
+    // 3. بناء محتوى السلة (تجميع في String للأداء)
+    let cartHtml = '';
+    let subtotal = 0;
 
     cart.forEach((item, index) => {
-        total += item.price * item.quantity;
-        cartItemsContainer.innerHTML += `
+        subtotal += item.price * item.quantity;
+        cartHtml += `
             <div class="cart-item">
                 <div class="item-info">
-                    <img src="${item.image}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">
+                    <img src="${item.image}" alt="${item.name}" style="width:55px; height:55px; object-fit:cover; border-radius:8px;">
                     <div>
-                        <h4>${item.name}</h4>
-                        <span class="item-price">${item.price} ج.م</span>
+                        <h4 style="font-size: 14px; margin-bottom: 5px;">${item.name}</h4>
+                        <span class="item-price" style="color: var(--primary); font-weight: bold;">${item.price} ج.م</span>
                     </div>
                 </div>
                 <div class="item-actions">
                     <div class="quantity-control">
-                        <button onclick="changeQuantity(${index}, -1)"><i class="fa-solid fa-minus"></i></button>
-                        <span>${item.quantity}</span>
                         <button onclick="changeQuantity(${index}, 1)"><i class="fa-solid fa-plus"></i></button>
+                        <span>${item.quantity}</span>
+                        <button onclick="changeQuantity(${index}, -1)"><i class="fa-solid fa-minus"></i></button>
                     </div>
-                    <button onclick="removeFromCart(${index})" class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
+                    <button onclick="removeFromCart(${index})" class="delete-btn" title="حذف">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
             </div>
         `;
     });
 
-    const delivery = cart.length > 0 ? 30 : 0;
-    totalPriceElement.textContent = (total + delivery) + ' ج.م';
+    // عرض المنتجات مرة واحدة
+    cartItemsContainer.innerHTML = cartHtml;
+
+    // 4. حساب الإجمالي مع التوصيل
+    const delivery = 30; // سعر التوصيل ثابت
+    const finalTotal = subtotal + delivery;
+    totalPriceElement.textContent = finalTotal + ' ج.م';
 }
+
+// ضيف السطرين دول في ملف script.js عشان الزراير تشتغل مع الـ module
+window.changeQuantity = changeQuantity;
+window.removeFromCart = removeFromCart;
 
 window.changeQuantity = function(index, delta) {
     if (cart[index].quantity + delta > 0) {
