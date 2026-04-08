@@ -54,7 +54,7 @@ const mobileCategoriesBtn = document.getElementById('mobileCategoriesBtn');
 const myOrdersBtn = document.getElementById('myOrdersBtn');
 const ordersModal = document.getElementById('ordersModal');
 const ordersList = document.getElementById('ordersList');
-
+let cart = []; // ده اللي هيشيل المنتجات اللي العميل يختارها
 // ==========================================
 // 2. نظام تسجيل الدخول والحسابات (Authentication)
 // ==========================================
@@ -299,29 +299,76 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
     });
 });
 
-// ==========================================
-// 5. جلب المنتجات من الفاير بيس
-// ==========================================
 function attachAddToCartEvents() {
     document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            // سحب بيانات المنتج من "الكارد" اللي فيه الزرار
+            const card = this.closest('.card');
+            const product = {
+                id: Date.now(), // رقم عشوائي للتمييز
+                name: card.querySelector('h3').textContent,
+                price: parseInt(card.querySelector('.price').textContent.replace(/\D/g, '')),
+                image: card.querySelector('.product-img').style.backgroundImage.slice(5, -2).replace(/"/g, "")
+            };
+
+            // إضافة المنتج للمصفوفة
+            cart.push(product);
+            
+            // تحديث شكل الزرار مؤقتاً
             const originalIcon = this.innerHTML;
             this.innerHTML = '<i class="fa-solid fa-check"></i>';
             this.style.backgroundColor = 'var(--primary)';
-            this.style.color = 'var(--white)';
-            
-            if (cartBadge) cartBadge.textContent = parseInt(cartBadge.textContent) + 1;
+
+            // تنفيذ دوال التحديث
+            updateCartUI(); 
 
             setTimeout(() => {
                 this.innerHTML = originalIcon;
                 this.style.backgroundColor = '';
-                this.style.color = '';
-            }, 1500);
+            }, 1000);
         });
     });
 }
+function updateCartUI() {
+    const cartItemsContainer = document.querySelector('.cart-items');
+    const cartBadge = document.querySelector('.cart-badge');
+    const totalPriceElement = document.querySelector('.total-price span:last-child');
 
+    // تحديث الرقم اللي على أيقونة السلة
+    cartBadge.textContent = cart.length;
+
+    // مسح المحتوى القديم ورسم الجديد
+    cartItemsContainer.innerHTML = '';
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        total += item.price;
+        cartItemsContainer.innerHTML += `
+            <div class="cart-item">
+                <div class="item-info">
+                    <img src="${item.image}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">
+                    <div>
+                        <h4>${item.name}</h4>
+                        <span class="item-price">${item.price} ج.م</span>
+                    </div>
+                </div>
+                <button onclick="removeFromCart(${index})" class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+        `;
+    });
+
+    // تحديث الإجمالي (مع إضافة 30 ج توصيل مثلاً)
+    const delivery = cart.length > 0 ? 30 : 0;
+    totalPriceElement.textContent = (total + delivery) + ' ج.م';
+}
+
+// دالة الحذف من السلة
+window.removeFromCart = function(index) {
+    cart.splice(index, 1); // مسح المنتج من المصفوفة
+    updateCartUI(); // إعادة رسم السلة
+};
 async function fetchProducts() {
     const productsGrid = document.getElementById('productsGrid');
     if(!productsGrid) return; 
