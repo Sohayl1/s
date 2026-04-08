@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - مكتبة نور</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2>مكتبة <span>نور</span></h2>
+                <p>لوحة الإدارة</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="admin.html" class="active"><i class="fa-solid fa-box-open"></i> إضافة منتج</a>
+                <a href="manage-products.html"><i class="fa-solid fa-list"></i> إدارة المنتجات</a>
+                <a href="orders.html"><i class="fa-solid fa-cart-arrow-down"></i> الطلبات</a>
+                <a href="customers.html"><i class="fa-solid fa-users"></i> العملاء</a>
+                <a href="index.html" class="back-to-site"><i class="fa-solid fa-arrow-right-from-bracket"></i> العودة للموقع</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="admin-header">
+                <div class="page-title">
+                    <h1>إضافة منتج جديد</h1>
+                </div>
+                <div class="admin-profile">
+                    <span>المدير</span>
+                    <div class="avatar"><i class="fa-solid fa-user-tie"></i></div>
+                </div>
+            </header>
+
+            <div class="form-container">
+                <form id="addProductForm">
+                    <div class="form-group">
+                        <label>اسم المنتج</label>
+                        <input type="text" id="productName" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>الماركة</label>
+                            <input type="text" id="productBrand" required>
+                        </div>
+                        <div class="form-group">
+                            <label>القسم</label>
+                            <select id="productCategory" required>
+                                <option value="أقلام">أقلام</option>
+                                <option value="كشاكيل وكراسات">كشاكيل وكراسات</option>
+                                <option value="ألوان">ألوان</option>
+                                <option value="شنط مدرسية">شنط مدرسية</option>
+                                <option value="أدوات هندسية">أدوات هندسية</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>السعر (ج.م)</label>
+                            <input type="number" id="productPrice" required>
+                        </div>
+                        <div class="form-group">
+                            <label>رابط الصورة (URL)</label>
+                            <input type="url" id="productImage" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>وصف المنتج</label>
+                        <textarea id="productDesc" rows="4" required></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج في قاعدة البيانات
+                    </button>
+                    
+                    <div id="successMessage" class="success-msg">تمت إضافة المنتج بنجاح!</div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

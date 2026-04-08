@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتبة نور - للمستلزمات المدرسية والمكتبية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-right">
+            <div class="logo">مكتبة <span class="text-orange">نور</span></div>
+            <div class="dropdown">
+                <button id="categoriesBtn" class="dropbtn">الأقسام <i class="fa-solid fa-chevron-down"></i></button>
+                <div id="categoriesDropdown" class="dropdown-content">
+                    <a href="#"><i class="fa-solid fa-pen-ruler"></i> أدوات مدرسية</a>
+                    <a href="#"><i class="fa-solid fa-book"></i> كشاكيل وكراسات</a>
+                    <a href="#"><i class="fa-solid fa-briefcase"></i> شنط ومقالم</a>
+                    <a href="#"><i class="fa-solid fa-palette"></i> ألوان وفنون</a>
+                    <a href="#"><i class="fa-solid fa-paperclip"></i> أدوات مكتبية</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" placeholder="ابحث عن قلم، كشكول، ألوان، أو ماركة...">
+            <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <div class="header-actions">
+            <button id="cartBtn" class="icon-btn">
+                <i class="fa-solid fa-cart-shopping"></i> 
+                <span class="cart-badge">2</span>
+            </button>
+            <button id="loginBtn" class="login-btn"><i class="fa-regular fa-user"></i> تسجيل الدخول</button>
+            <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+        </div>
+    </header>
+
+    <div id="overlay" class="overlay"></div>
+
+    <div id="loginModal" class="modal">
+        <div class="modal-icon"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+        <h2 class="modal-title">مرحباً بك مجدداً</h2>
+        <div class="input-group">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" class="modal-input" placeholder="البريد الإلكتروني">
+        </div>
+        <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" class="modal-input" placeholder="كلمة المرور">
+        </div>
+        <p class="modal-link">ليس لديك حساب؟ <span id="showSignup">إنشاء حساب جديد</span></p>
+        <button class="modal-submit">تسجيل الدخول</button>
+    </div>
+
+    <div id="signupModal" class="modal">
+        <div class="modal-icon"><i class="fa-solid fa-user-plus"></i></div>
+        <h2 class="modal-title">إنشاء حساب جديد</h2>
+        <div class="input-group">
+            <i class="fa-regular fa-user"></i>
+            <input type="text" class="modal-input" placeholder="الاسم الكامل">
+        </div>
+        <div class="input-group">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" class="modal-input" placeholder="البريد الإلكتروني">
+        </div>
+        <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" class="modal-input" placeholder="كلمة المرور">
+        </div>
+        <p class="modal-link">لديك حساب بالفعل؟ <span id="showLogin">تسجيل الدخول</span></p>
+        <button class="modal-submit">إنشاء الحساب</button>
+    </div>
+
+    <div id="cartModal" class="modal cart-modal">
+        <h2 class="modal-title"><i class="fa-solid fa-cart-shopping"></i> عربة التسوق</h2>
+        <div class="cart-items">
+            <div class="cart-item">
+                <div class="item-info">
+                    <div class="item-img"></div>
+                    <div>
+                        <h4>دستة كشاكيل سلك 100 ورقة</h4>
+                        <span class="item-price">180 ج.م</span>
+                    </div>
+                </div>
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <button><i class="fa-solid fa-minus"></i></button>
+                        <span>1</span>
+                        <button><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <button class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+            <div class="cart-item">
+                <div class="item-info">
+                    <div class="item-img"></div>
+                    <div>
+                        <h4>طقم أقلام جاف 12 لون</h4>
+                        <span class="item-price">60 ج.م</span>
+                    </div>
+                </div>
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <button><i class="fa-solid fa-minus"></i></button>
+                        <span>2</span>
+                        <button><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <button class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="cart-summary">
+            <div class="summary-row">
+                <span>التوصيل:</span>
+                <span class="free-delivery">30 ج.م</span>
+            </div>
+            <div class="summary-row total-price">
+                <span>الإجمالي:</span>
+                <span>330 ج.م</span>
+            </div>
+            <button class="modal-submit">إتمام الطلب الآن</button>
+        </div>
+    </div>
+
+    <main>
+        <section class="categories-slider">
+            <div class="sub-categories">
+                <div class="sub-cat active">الكل</div>
+                <div class="sub-cat">أقلام</div>
+                <div class="sub-cat">كشاكيل وكراسات</div>
+                <div class="sub-cat">ألوان</div>
+                <div class="sub-cat">شنط مدرسية</div>
+                <div class="sub-cat">أدوات هندسية</div>
+                <div class="sub-cat">ورق تصوير</div>
+                <div class="sub-cat">آلات حاسبة</div>
+            </div>
+        </section>
+
+        <section class="product-cards">
+            <div class="section-header">
+                <h2>أحدث المنتجات والعروض</h2>
+                <a href="#" class="view-all">عرض الكل <i class="fa-solid fa-arrow-left-long"></i></a>
+            </div>
+            <div class="grid-container" id="productsGrid">
+                <p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--gray);">جاري تحميل المنتجات...</p>
+            </div>
+        </section>
+
+        <section class="why-choose-us">
+            <h2>لماذا تختار مكتبة نور؟</h2>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                    <h3>توصيل للمنزل</h3>
+                    <p>نوفر عناء الزحام ونوصل طلبات المدارس لحد باب البيت</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fa-solid fa-tags"></i></div>
+                    <h3>أسعار الجملة</h3>
+                    <p>أفضل الأسعار والتخفيضات على طلبات الدستة والكميات</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fa-solid fa-medal"></i></div>
+                    <h3>ماركات أصلية</h3>
+                    <p>جميع أدواتنا من ماركات عالمية ومحلية معتمدة ومضمونة</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo footer-logo">مكتبة <span class="text-orange">نور</span></div>
+            <p>وجهتك الأولى لتجهيز طلبات المدارس والأدوات المكتبية</p>
+            <div class="social-links">
+                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>جميع الحقوق محفوظة &copy; 2026 مكتبة نور</p>
+        </div>
+    </footer>
+
+<script type="module" src="script.js"></script>
+
+<nav class="mobile-bottom-nav">
+        <a href="index.html" class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="#" class="nav-item" id="mobileCategoriesBtn">
+            <i class="fa-solid fa-border-all"></i>
+            <span>الأقسام</span>
+        </a>
+        <a href="#" class="nav-item" id="mobileAccountBtn">
+            <i class="fa-regular fa-user"></i>
+            <span>حسابي</span>
+        </a>
+    </nav>
+
+</body>
+</html>

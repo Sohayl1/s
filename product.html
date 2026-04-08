@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المنتج - مكتبة نور</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-right">
+            <div class="logo">مكتبة <span class="text-orange">نور</span></div>
+            <div class="dropdown">
+                <button id="categoriesBtn" class="dropbtn">الأقسام <i class="fa-solid fa-chevron-down"></i></button>
+                <div id="categoriesDropdown" class="dropdown-content">
+                    <a href="#"><i class="fa-solid fa-pen-ruler"></i> قسم 1</a>
+                    <a href="#"><i class="fa-solid fa-book"></i> قسم 2</a>
+                    <a href="#"><i class="fa-solid fa-briefcase"></i> قسم 3</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" placeholder="ابحث هنا...">
+            <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <div class="header-actions">
+            <button id="cartBtn" class="icon-btn">
+                <i class="fa-solid fa-cart-shopping"></i> 
+                <span class="cart-badge">0</span>
+            </button>
+            <button id="loginBtn" class="login-btn"><i class="fa-regular fa-user"></i> تسجيل الدخول</button>
+            <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+        </div>
+    </header>
+
+    <div id="overlay" class="overlay"></div>
+
+    <main class="product-page-main">
+        <div class="breadcrumb">
+            <a href="index.html">الرئيسية</a>
+            <i class="fa-solid fa-chevron-left"></i>
+            <a href="#">القسم الخاص بالمنتج</a>
+            <i class="fa-solid fa-chevron-left"></i>
+            <span class="current-page">اسم المنتج يظهر هنا</span>
+        </div>
+
+        <section class="single-product-container">
+            <div class="product-gallery">
+                <div class="main-image-container">
+                    <div class="product-main-image"></div>
+                </div>
+                <div class="thumbnails-container">
+                    <div class="thumbnail active-thumb"></div>
+                    <div class="thumbnail"></div>
+                    <div class="thumbnail"></div>
+                    <div class="thumbnail"></div>
+                </div>
+            </div>
+
+            <div class="product-details-info">
+                <span class="product-brand"><i class="fa-solid fa-tag"></i> ماركة المنتج</span>
+                <h1 class="product-title">اسم المنتج يكتب هنا بشكل ديناميكي</h1>
+                
+                <div class="product-meta">
+                    <div class="sku">كود المنتج: <span>-------</span></div>
+                    <div class="stock-status in-stock"><i class="fa-solid fa-circle-check"></i> متوفر في المخزن</div>
+                </div>
+
+                <div class="product-price-container">
+                    <span class="product-price">00.00 ج.م</span>
+                </div>
+
+                <div class="product-short-description">
+                    <p>وصف مختصر للمنتج يظهر هنا. هذا النص هو نص تجريبي سيتم استبداله لاحقاً من لوحة التحكم الخاصة بالمدير بوصف حقيقي يعبر عن مميزات وخصائص المنتج المعروض.</p>
+                </div>
+
+                <div class="product-actions-form">
+                    <div class="quantity-wrapper">
+                        <label>الكمية:</label>
+                        <div class="quantity-control lg-control">
+                            <button class="qty-btn minus"><i class="fa-solid fa-minus"></i></button>
+                            <input type="number" value="1" min="1" class="qty-input">
+                            <button class="qty-btn plus"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn-primary add-to-cart-lg">
+                            <i class="fa-solid fa-cart-plus"></i> أضف إلى العربة
+                        </button>
+                        <button class="btn-icon favorite-btn">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="product-description-tabs">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="desc">الوصف الشامل</button>
+                <button class="tab-btn" data-tab="specs">المواصفات</button>
+            </div>
+            
+            <div class="tab-content active" id="desc">
+                <h3>تفاصيل المنتج</h3>
+                <p>مساحة مخصصة للوصف الطويل والتفصيلي للمنتج. يمكن للمدير إضافة نصوص، قوائم نقطية، أو حتى صور توضيحية إضافية من خلال لوحة التحكم (Dashboard) ليتم عرضها في هذه المنطقة بشكل منسق وجميل.</p>
+            </div>
+            
+            <div class="tab-content" id="specs">
+                <h3>مواصفات إضافية</h3>
+                <ul class="specs-list">
+                    <li><span>الخاصية 1:</span> قيمة الخاصية تظهر هنا</li>
+                    <li><span>الخاصية 2:</span> قيمة الخاصية تظهر هنا</li>
+                    <li><span>الخاصية 3:</span> قيمة الخاصية تظهر هنا</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo footer-logo">مكتبة <span class="text-orange">نور</span></div>
+            <p>وجهتك الأولى لتجهيز طلبات المدارس والأدوات المكتبية</p>
+            <div class="social-links">
+                <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>جميع الحقوق محفوظة &copy; 2026 مكتبة نور</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
