@@ -1,9 +1,7 @@
-// استدعاء مكتبات الفاير بيس (بما فيها الإحصائيات)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
-// إعدادات الفاير بيس الخاصة بمشروعك
 const firebaseConfig = {
     apiKey: "AIzaSyDuVrnqnfRS9XdUzQMgKQtZWExxxDbqQmw",
     authDomain: "nourstationary.firebaseapp.com",
@@ -14,14 +12,10 @@ const firebaseConfig = {
     measurementId: "G-6RXWE2BR7Y"
 };
 
-// تهيئة الفاير بيس
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app); // تم إضافة الـ Analytics هنا
+const analytics = getAnalytics(app); 
 const db = getFirestore(app);
 
-// ==========================================
-// 1. تعريف عناصر الـ DOM
-// ==========================================
 const categoriesBtn = document.getElementById('categoriesBtn');
 const categoriesDropdown = document.getElementById('categoriesDropdown');
 const loginBtn = document.getElementById('loginBtn');
@@ -38,16 +32,10 @@ const navItems = document.querySelectorAll('.nav-item');
 const mobileAccountBtn = document.getElementById('mobileAccountBtn');
 const mobileCategoriesBtn = document.getElementById('mobileCategoriesBtn');
 
-// ==========================================
-// 2. إصلاح عرض الأقسام في شاشات الموبايل
-// ==========================================
 if (window.innerWidth <= 768 && categoriesDropdown) {
     document.body.appendChild(categoriesDropdown);
 }
 
-// ==========================================
-// 3. أحداث القوائم (Dropdowns)
-// ==========================================
 if (categoriesBtn) {
     categoriesBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -55,7 +43,6 @@ if (categoriesBtn) {
     });
 }
 
-// إغلاق القائمة عند النقر في أي مكان فارغ
 window.addEventListener('click', (e) => {
     if (categoriesDropdown && categoriesDropdown.classList.contains('show')) {
         if (!e.target.closest('.dropdown-content') && !e.target.closest('#mobileCategoriesBtn') && !e.target.closest('#categoriesBtn')) {
@@ -65,9 +52,6 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// ==========================================
-// 4. أحداث النوافذ المنبثقة (Modals)
-// ==========================================
 function openModal(modal) {
     if (overlay && modal) {
         overlay.style.display = 'block';
@@ -103,9 +87,6 @@ if (showLogin) {
     });
 }
 
-// ==========================================
-// 5. أحداث التنقل السفلي للموبايل (Bottom Nav)
-// ==========================================
 if (mobileAccountBtn) {
     mobileAccountBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -140,9 +121,6 @@ if (homeBtn) {
     });
 }
 
-// ==========================================
-// 6. تأثيرات الأقسام العلوية (Categories Slider)
-// ==========================================
 document.querySelectorAll('.sub-cat').forEach(item => {
     item.addEventListener('click', function() {
         document.querySelectorAll('.sub-cat').forEach(el => el.classList.remove('active'));
@@ -150,9 +128,6 @@ document.querySelectorAll('.sub-cat').forEach(item => {
     });
 });
 
-// ==========================================
-// 7. منطق سلة المشتريات (Cart Logic)
-// ==========================================
 function updateCartTotal() {
     let total = 0;
     const cartItems = document.querySelectorAll('.cart-item');
@@ -232,9 +207,6 @@ document.querySelectorAll('.modal-submit').forEach(btn => {
     });
 });
 
-// ==========================================
-// 8. زر الإضافة للسلة وأزرار التحميل
-// ==========================================
 function attachAddToCartEvents() {
     document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -258,15 +230,14 @@ function attachAddToCartEvents() {
     });
 }
 
-// ==========================================
-// 9. جلب المنتجات من الفاير بيس
-// ==========================================
 async function fetchProducts() {
     const productsGrid = document.getElementById('productsGrid');
     if(!productsGrid) return; 
 
     try {
-        const querySnapshot = await getDocs(collection(db, "products"));
+        // ترتيب المنتجات بالأحدث
+        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
         productsGrid.innerHTML = '';
         
         if(querySnapshot.empty) {
@@ -299,7 +270,7 @@ async function fetchProducts() {
         attachAddToCartEvents();
         
     } catch (error) {
-        productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--danger);">حدث خطأ أثناء تحميل المنتجات.</p>';
+        productsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--danger);">حدث خطأ أثناء تحميل المنتجات. تأكد من اتصالك بالإنترنت.</p>';
         console.error("Firebase fetch error:", error);
     }
 }
