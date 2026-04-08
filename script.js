@@ -54,7 +54,8 @@ const mobileCategoriesBtn = document.getElementById('mobileCategoriesBtn');
 const myOrdersBtn = document.getElementById('myOrdersBtn');
 const ordersModal = document.getElementById('ordersModal');
 const ordersList = document.getElementById('ordersList');
-let cart = []; // ده اللي هيشيل المنتجات اللي العميل يختارها
+// بدل let cart = []; خلّيها كدة:
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
 // ==========================================
 // 2. نظام تسجيل الدخول والحسابات (Authentication)
 // ==========================================
@@ -389,6 +390,7 @@ function updateCartUI() {
     const delivery = 30; // سعر التوصيل ثابت
     const finalTotal = subtotal + delivery;
     totalPriceElement.textContent = finalTotal + ' ج.م';
+    localStorage.setItem('cart', JSON.stringify(cart));
 }
 
 // ضيف السطرين دول في ملف script.js عشان الزراير تشتغل مع الـ module
