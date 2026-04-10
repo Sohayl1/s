@@ -200,3 +200,169 @@ form {
     margin-top: 20px;
     font-weight: 700;
 }
+
+/* إعدادات الشاشات الصغيرة والموبايل */
+@media (max-width: 768px) {
+    .admin-container {
+        flex-direction: column;
+    }
+
+    /* تعديل القائمة الجانبية لتصبح أفقية في الأعلى */
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        right: auto;
+        top: auto;
+        padding: 10px 0;
+        z-index: 100;
+    }
+
+    .sidebar-logo {
+        padding: 0 10px 15px;
+        margin-bottom: 10px;
+    }
+
+    /* جعل الروابط أفقية وقابلة للتمرير */
+    .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+    }
+
+    .sidebar-nav a {
+        padding: 10px 15px;
+        font-size: 14px;
+        border-right: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+        border-right: none;
+        border-bottom: 3px solid var(--primary);
+    }
+
+    .sidebar-nav a.back-to-site {
+        margin-top: 0;
+    }
+
+    /* تعديل المحتوى الرئيسي ليأخذ كامل العرض */
+    .main-content {
+        margin-right: 0;
+        width: 100%;
+    }
+
+    /* تظبيط الهيدر */
+    .admin-header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    /* تظبيط الفورم والمسافات */
+    .form-container {
+        padding: 20px 15px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    /* =========================================
+       تحسين إدارة المنتجات للموبايل (نظام الكروت)
+       ========================================= */
+       
+    /* إخفاء رأس الجدول لأنه بياخد مساحة عالفاضي في الموبايل */
+    .products-table thead {
+        display: none; 
+    }
+
+    /* تحويل الجدول لعناصر بلوك عشان نقدر نتحكم فيها ككروت */
+    .products-table, .products-table tbody, .products-table tr, .products-table td {
+        display: block;
+        width: 100%;
+    }
+
+    /* تصميم الصف الواحد كأنه "كارت" مستقل */
+    .products-table tr {
+        background: #fff;
+        margin-bottom: 20px;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        border: 1px solid var(--border);
+    }
+
+    /* تصميم الخلايا (البيانات) داخل الكارت */
+    .products-table td {
+        text-align: right;
+        padding: 10px 0;
+        border-bottom: 1px dashed #eee;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--secondary);
+    }
+
+    /* تكبير الصورة شوية جوا الكارت */
+    .products-table img {
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        display: block;
+        margin: 0 auto 10px auto; /* توسيط الصورة */
+    }
+
+    /* تظبيط حاوية الأزرار (التعديل والحذف) */
+    .products-table td:last-child {
+        border-bottom: none;
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 15px;
+        padding-bottom: 0;
+    }
+
+    /* تكبير الأزرار لتكون سهلة الضغط (Touch Target) */
+    .btn-edit, .btn-delete {
+        flex: 1; /* بيخلي الزرارين ياخدوا عرض الكارت بالكامل مقسومين بالنص */
+        padding: 14px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        margin: 0;
+        border-radius: 8px;
+    }
+
+    /* =========================================
+       تحسين نافذة التعديل المنبثقة (Modal)
+       ========================================= */
+    .edit-modal-content {
+        width: 95%; /* تاخد عرض الشاشة وتسيبلها هوامش بسيطة */
+        margin: 5% auto;
+        padding: 25px 15px;
+        border-radius: 15px;
+    }
+
+    .close-edit {
+        top: 10px;
+        left: 20px;
+        font-size: 35px; /* تكبير زر الإغلاق لسهولة الضغط */
+        padding: 5px;
+    }
+}

@@ -1171,19 +1171,19 @@ footer {
         display: none;
     }
 
-   .mobile-bottom-nav {
+ .mobile-bottom-nav {
         display: flex;
         position: fixed;
         bottom: 12px;
         left: 50%;
         transform: translateX(-50%);
-        width: 95%;
+        width: 90%; /* صغرنا العرض شوية، ممكن ترجعها 95% لو عايزها أعرض */
         max-width: 400px;
         background-color: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         box-shadow: 0 10px 30px rgba(26, 43, 76, 0.15);
         z-index: 9999;
-        padding: 8px;
+        padding: 4px 10px; /* التعديل هنا: خلينا المسافة فوق وتحت 4 بيكسل بدل 8 عشان تبقى أنحف */
         justify-content: space-between;
         border-radius: 40px;
         border: 1px solid rgba(226, 232, 240, 0.8);
@@ -1197,18 +1197,18 @@ footer {
         justify-content: center;
         text-decoration: none;
         color: var(--gray);
-        font-size: 11px;
+        font-size: 10px; /* صغرنا الخط درجة عشان يتناسب مع الحجم الجديد */
         font-weight: 800;
-        gap: 5px;
+        gap: 2px; /* قللنا المسافة بين الأيقونة والنص */
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         -webkit-tap-highlight-color: transparent;
-        padding: 10px 0;
+        padding: 6px 0; /* التعديل هنا: قللنا المسافة الداخلية للزرار نفسه بدل 10 بيكسل */
         border-radius: 30px;
         cursor: pointer;
     }
 
     .nav-item i {
-        font-size: 22px;
+        font-size: 20px; /* صغرنا الأيقونة حاجة بسيطة بدل 22 بيكسل */
         transition: transform 0.3s ease;
     }
 
