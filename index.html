@@ -9,22 +9,36 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <div class="bg-shapes"></div>
+
+<div class="top-bar">
+        <div class="top-bar-content">
+            <p>
+                <i class="fa-solid fa-bullhorn"></i> 
+                أسعار خاصة للجملة والتجاري
+            </p>
+            <div class="top-bar-close" onclick="this.parentElement.parentElement.style.display='none';" title="إغلاق">
+                <i class="fa-solid fa-xmark"></i>
+            </div>
+        </div>
+    </div>
+
+
+
     <div id="toastContainer" class="toast-container"></div>
 
     <header>
-        <div class="header-right">
-            <div class="logo">مكتبة <span class="text-orange">نور</span></div>
-            <div class="dropdown">
-                <button id="categoriesBtn" class="dropbtn">الأقسام <i class="fa-solid fa-chevron-down"></i></button>
-                <div id="categoriesDropdown" class="dropdown-content">
-                    <a href="#"><i class="fa-solid fa-pen-ruler"></i> أدوات مدرسية</a>
-                    <a href="#"><i class="fa-solid fa-book"></i> كشاكيل وكراسات</a>
-                    <a href="#"><i class="fa-solid fa-briefcase"></i> شنط ومقالم</a>
-                    <a href="#"><i class="fa-solid fa-palette"></i> ألوان وفنون</a>
-                    <a href="#"><i class="fa-solid fa-paperclip"></i> أدوات مكتبية</a>
-                </div>
+      <div class="header-right">
+    <div class="logo">مكتبة <span class="text-orange">نور</span></div>
+    <div class="dropdown">
+        <button id="categoriesBtn" class="dropbtn">الأقسام <i class="fa-solid fa-chevron-down"></i></button>
+        
+        <div id="categoriesDropdown" class="dropdown-content">
             </div>
-        </div>
+        
+    </div>
+</div>
         
         <div class="search-container">
             <input type="text" placeholder="ابحث عن قلم، كشكول، ألوان، أو ماركة...">
@@ -96,22 +110,89 @@
         <button id="doSignupBtn" class="modal-submit">إنشاء الحساب</button>
     </div>
 
-    <div id="cartModal" class="modal cart-modal">
-        <h2 class="modal-title"><i class="fa-solid fa-cart-shopping"></i> عربة التسوق</h2>
-        <div class="cart-items">
+<div id="cartModal" class="modal cart-modal">
+    <h2 class="modal-title"><i class="fa-solid fa-cart-shopping"></i> عربة التسوق</h2>
+    <div class="cart-items">
+        </div>
+    <div class="cart-summary" style="margin-top: 15px; border-top: 1px dashed var(--gray-light); padding-top: 15px;">
+        <div class="summary-row total-price">
+            <span>قيمة المنتجات:</span>
+            <span>0 ج.م</span>
+        </div>
+        <div class="promo-code-section" style="margin-top: 15px; border-top: 1px dashed var(--gray-light); padding-top: 15px;">
+    <div class="input-group" style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <input type="text" id="promoCodeInput" class="modal-input" placeholder="أدخل كود الخصم" style="margin-bottom: 0;">
+        <button onclick="window.applyPromoCode()" class="btn-primary" style="padding: 10px 20px; font-size: 14px; flex: none; width: auto;">تطبيق</button>
+    </div>
+    <p id="promoMsg" style="font-size: 13px; font-weight: 700; display: none;"></p>
+</div>
+        <button class="modal-submit checkout-btn" onclick="window.openCheckoutStep()">متابعة لإتمام الطلب <i class="fa-solid fa-arrow-left"></i></button>
+    </div>
+</div>
+
+<div id="checkoutModal" class="modal">
+    <h2 class="modal-title"><i class="fa-solid fa-money-check-dollar"></i> تفاصيل الاستلام والدفع</h2>
+    
+    <div class="delivery-methods" style="margin-bottom: 25px;">
+        <label class="delivery-card active" id="chkHomeCard">
+            <input type="radio" name="checkoutMethod" value="home" checked onchange="window.toggleCheckoutForm()"> 
+            <div class="method-info">
+                <i class="fa-solid fa-house-chimney"></i>
+                <span>توصيل للمنزل</span>
             </div>
-        <div class="cart-summary">
-            <div class="summary-row">
-                <span>التوصيل:</span>
-                <span class="free-delivery">30 ج.م</span>
+        </label>
+        <label class="delivery-card" id="chkPickupCard">
+            <input type="radio" name="checkoutMethod" value="pickup" onchange="window.toggleCheckoutForm()"> 
+            <div class="method-info">
+                <i class="fa-solid fa-store"></i>
+                <span>استلام من المحل</span>
             </div>
-            <div class="summary-row total-price">
-                <span>الإجمالي:</span>
-                <span>0 ج.م</span>
+        </label>
+    </div>
+
+    <div id="homeDeliveryForm" class="checkout-form">
+        <div class="input-group">
+            <input type="text" id="homeName" class="modal-input" placeholder="الاسم بالكامل" required>
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="input-group">
+            <input type="tel" id="homePhone" class="modal-input" placeholder="رقم التليفون (للتواصل وفودافون كاش)" required>
+            <i class="fa-solid fa-phone"></i>
+        </div>
+        <div class="input-group">
+            <input type="text" id="homeAddress" class="modal-input" placeholder="العنوان بالتفصيل" required>
+            <i class="fa-solid fa-location-dot"></i>
+        </div>
+        
+        <div class="vf-cash-notice">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+            <div>
+                <p>برجاء تحويل مبلغ <strong><span id="vfTotal">0</span> ج.م</strong> (شامل 30 ج.م توصيل) على فودافون كاش رقم:</p>
+                <h3>0100000000</h3>
             </div>
-            <button class="modal-submit checkout-btn">إتمام الطلب الآن</button>
         </div>
     </div>
+
+    <div id="pickupForm" class="checkout-form" style="display: none;">
+        <div class="input-group">
+            <input type="text" id="pickupName" class="modal-input" placeholder="اسم صاحب الطلب" required>
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="input-group" style="margin-bottom: 20px;">
+            <label style="display:block; margin-bottom: 5px; color: var(--gray); font-size: 14px;">متى ترغب في الاستلام؟</label>
+            <input type="datetime-local" id="pickupTime" class="modal-input" required>
+        </div>
+        
+        <div class="store-notice">
+            <i class="fa-solid fa-handshake"></i>
+            <p>الدفع عند الاستلام في المحل. الإجمالي المطلوب: <strong><span id="pickupTotal">0</span> ج.م</strong></p>
+        </div>
+    </div>
+
+    <button class="modal-submit" style="margin-top: 20px; background-color: var(--success);" onclick="window.confirmFinalOrder()">
+        <i class="fa-solid fa-check-double"></i> تأكيد وإرسال الطلب
+    </button>
+</div>
 
     <div id="ordersModal" class="modal">
         <h2 class="modal-title"><i class="fa-solid fa-clipboard-list"></i> سجل طلباتي</h2>
@@ -121,24 +202,42 @@
     </div>
 
     <main>
-        <section class="categories-slider">
-            <div class="sub-categories">
-                <div class="sub-cat active">الكل</div>
-                <div class="sub-cat">أقلام</div>
-                <div class="sub-cat">كشاكيل وكراسات</div>
-                <div class="sub-cat">ألوان</div>
-                <div class="sub-cat">شنط مدرسية</div>
-                <div class="sub-cat">أدوات هندسية</div>
-                <div class="sub-cat">ورق تصوير</div>
-                <div class="sub-cat">آلات حاسبة</div>
+
+<section class="hero-banner-only">
+    <a href="#productsGrid" class="banner-link">
+        <img src="https://i.postimg.cc/4yKZjhwH/d6d56925-3254-41c5-90df-e5606e17272e.png    " alt="مكتبة نور - العودة للمدارس">
+    </a>
+</section>
+
+<section class="latest-products-section">
+            <div class="section-header">
+                <h2>وصل حديثاً 🔥</h2>
+                <div class="slider-arrows">
+
+                </div>
+            </div>
+            <div class="latest-slider-container" id="latestProductsSlider">
+                <p style="text-align: center; width: 100%; padding: 30px; color: var(--gray);">
+                    <i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل أحدث المنتجات...
+                </p>
             </div>
         </section>
 
-        <section class="product-cards">
+<section class="store-categories-section">
             <div class="section-header">
-                <h2>أحدث المنتجات والعروض</h2>
-                <a href="#" class="view-all">عرض الكل <i class="fa-solid fa-arrow-left-long"></i></a>
+                <h2>الأقسام الرئيسية</h2>
+                <div class="slider-arrows">
+                </div>
             </div>
+            <div class="sub-categories" id="categoriesSlider">
+                <div class="sub-cat active" onclick="window.filterProducts('all', this)">
+                    <i class="fa-solid fa-border-all"></i> الكل
+                </div>
+                </div>
+        </section>
+
+        <section class="product-cards">
+
             <div class="grid-container" id="productsGrid">
                 <p style="text-align: center; grid-column: 1/-1; padding: 50px; color: var(--gray);">
                     <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary);"></i><br><br>جاري تحميل المنتجات...
@@ -167,6 +266,29 @@
             </div>
         </section>
     </main>
+
+    <section class="wholesale-banner">
+        <div class="wholesale-content">
+            <div class="wholesale-text">
+                <span class="badge">عروض حصرية</span>
+                <h2><i class="fa-solid fa-boxes-packing"></i> أسعار خاصة للجملة والتجاري</h2>
+                <p>نوفر أفضل الخصومات على طلبات الدستة والكميات الكبيرة للمدارس، الحضانات، والشركات. تواصل معنا لمعرفة قائمة أسعار الجملة.</p>
+            </div>
+            <a href="contact.html" class="wholesale-btn">
+                اطلب كميتك الآن <i class="fa-solid fa-arrow-left"></i>
+            </a>
+        </div>
+    </section>
+
+<section class="cta-section">
+        <div class="cta-content">
+            <h2>هل لديك أي استفسار أو تود زيارتنا؟</h2>
+            <p>فريق مكتبة نور جاهز للرد عليك وتجهيز طلباتك بأسرع وقت. يمكنك التواصل معنا أونلاين أو تشريفنا بالزيارة في فرعنا بـ <strong>المعادي، القاهرة</strong>.</p>
+            <a href="contact.html" class="cta-btn">
+                <i class="fa-solid fa-map-location-dot"></i> تواصل معنا واعرف مكاننا
+            </a>
+        </div>
+    </section>
 
     <footer>
         <div class="footer-content">
@@ -198,5 +320,10 @@
     </nav>
 
     <script type="module" src="script.js"></script>
+
+<a href="https://wa.me/201140611192" class="whatsapp-float" target="_blank" rel="noopener noreferrer" title="تواصل معنا على واتساب">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
 </body>
 </html>

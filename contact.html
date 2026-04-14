@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تواصل معنا - مكتبة نور</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+:root {
+    /* الألوان الأساسية: الأخضر الزمردي (للزراير ولفت الانتباه) */
+    --primary: #10b981;         /* أخضر زمردي زاهي ومميز جداً */
+    --primary-hover: #059669;   /* أخضر أغمق قليلاً عند تمرير الماوس */
+    
+    /* الألوان الثانوية: الأزرق العميق (للهيدر، الفوتر، والخلفيات الداكنة) */
+    --secondary: #1e3a8a;       /* أزرق محيطي فخم جداً */
+    --secondary-hover: #172554; /* كحلي شديد العمق */
+    
+    /* ألوان النصوص والخلفيات متناغمة مع الثيم */
+    --dark: #0f172a;            /* لون النصوص الأساسية (أزرق داكن جداً بدل الأسود الميت) */
+    --dark-light: #334155;
+    --light: #f0fdfa;           /* لون الخلفية الأساسي (أبيض مكسور بسنة أخضر نعناعي خفيف جداً يريح العين) */
+    
+    /* الرماديات */
+    --gray: #64748b;
+    --gray-light: #e2e8f0;
+    --white: #ffffff;
+    
+    /* ألوان الحالات */
+    --danger: #ef4444;
+    --success: #10b981;         /* نفس لون الـ Primary لتأكيد النجاح */
+    
+    /* ظلال مخصصة واخدة سنة أزرق خفيفة عشان تندمج مع الثيم */
+    --shadow-sm: 0 2px 8px rgba(30, 58, 138, 0.06);
+    --shadow-md: 0 8px 16px rgba(30, 58, 138, 0.1);
+    --shadow-lg: 0 16px 32px rgba(30, 58, 138, 0.15);
+    
+    /* الأبعاد والحركات */
+    --radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
+<body>
+
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <header>
+        <div class="header-right">
+            <a href="index.html" style="text-decoration: none;">
+                <div class="logo">مكتبة <span class="text-orange">نور</span></div>
+            </a>
+        </div>
+        
+        <div class="header-actions">
+            <a href="index.html" class="login-btn"><i class="fa-solid fa-house"></i> العودة للرئيسية</a>
+        </div>
+    </header>
+
+    <main class="contact-page-main">
+        <div class="breadcrumb">
+            <a href="index.html"><i class="fa-solid fa-house"></i> الرئيسية</a>
+            <i class="fa-solid fa-chevron-left"></i>
+            <span class="current-page">تواصل معنا</span>
+        </div>
+
+        <div class="contact-container">
+            <div class="contact-details">
+                <h1 class="contact-title">يسعدنا تواصلك <span>معنا!</span></h1>
+                <p class="contact-subtitle">نحن هنا للإجابة على استفساراتك وتلبية طلباتك المدرسية والمكتبية بأسرع وقت.</p>
+
+                <div class="info-card">
+                    <div class="info-icon"><i class="fa-solid fa-phone-volume"></i></div>
+                    <div class="info-content">
+                        <h3>رقم الهاتف و الواتساب</h3>
+                        <p dir="ltr">01140611192</p>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon"><i class="fa-regular fa-clock"></i></div>
+                    <div class="info-content">
+                        <h3>ساعات العمل</h3>
+                        <p>من 7 صباحاً إلى 10 مساءً</p>
+                        <small style="color: var(--danger); font-weight: 700;"><i class="fa-solid fa-circle-exclamation"></i> مع الالتزام بقوانين الإغلاق الرسمية</small>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    <div class="info-content">
+                        <h3>العنوان</h3>
+                        <p>مكتبة النور، المعادي، القاهرة</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-map">
+                <div class="map-wrapper">
+                    <iframe 
+                        src="https://maps.google.com/maps?q=Elnour%20Stationary2%20%D9%85%D9%83%D8%AA%D8%A8%D8%A9%20%D8%A7%D9%84%D9%86%D9%88%D8%B1,%20%D8%A7%D9%84%D9%82%D8%A7%D9%87%D8%B1%D8%A9&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo footer-logo">مكتبة <span class="text-orange">نور</span></div>
+            <p>وجهتك الأولى لتجهيز طلبات المدارس والأدوات المكتبية</p>
+        </div>
+        <div class="footer-bottom">
+            <p>جميع الحقوق محفوظة &copy; 2026 مكتبة نور</p>
+        </div>
+    </footer>
+
+    <nav class="mobile-bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="contact.html" class="nav-item active">
+            <i class="fa-solid fa-headset"></i>
+            <span>تواصل معنا</span>
+        </a>
+    </nav>
+
+</body>
+</html>

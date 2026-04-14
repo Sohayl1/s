@@ -1,18 +1,30 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+// إضافة مكتبة المصادقة
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDuVrnqnfRS9XdUzQMgKQtZWExxxDbqQmw",
-    authDomain: "nourstationary.firebaseapp.com",
-    projectId: "nourstationary",
-    storageBucket: "nourstationary.firebasestorage.app",
-    messagingSenderId: "168335781622",
-    appId: "1:168335781622:web:53fd3e8035b0e00f3ac6d7",
-    measurementId: "G-6RXWE2BR7Y"
+    apiKey: "AIzaSyCKQuF48pvctCNNYq60o2IMNC5XiEHWqpI",
+    authDomain: "nourlibrary.firebaseapp.com",
+    projectId: "nourlibrary",
+    storageBucket: "nourlibrary.firebasestorage.app",
+    messagingSenderId: "799366924459",
+    appId: "1:799366924459:web:8c02f6f0b98867607f8fee",
+    measurementId: "G-MHHYJKL1XS"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app); // تهيئة المصادقة
+
+// التحقق من حالة تسجيل الدخول للمدير
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        console.warn("تنبيه: أنت لست مسجل الدخول، قد يرفض فايربيس إضافة المنتجات.");
+    } else {
+        console.log("مرحباً بالمدير:", user.email);
+    }
+});
 
 // ==========================================
 // 1. نظام التنقل بين التابات وجلب البيانات
@@ -210,3 +222,101 @@ editForm.addEventListener('submit', async (e) => {
         updateBtn.disabled = false;
     }
 });
+
+// ==========================================
+// إدارة الأقسام (Categories)
+// ==========================================
+const addCategoryForm = document.getElementById('addCategoryForm');
+const submitCatBtn = document.getElementById('submitCatBtn');
+
+// دالة لجلب الأقسام وعرضها في الجدول وتحديث حقول الـ Select
+async function loadCategories() {
+    const tableBody = document.getElementById('categoriesTableBody');
+    const productCatSelect = document.getElementById('productCategory');
+    const editProductCatSelect = document.getElementById('editProductCategory');
+    
+    if(tableBody) tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+    
+    try {
+        const q = query(collection(db, "categories"));
+        const querySnapshot = await getDocs(q);
+        
+        if(tableBody) tableBody.innerHTML = '';
+        productCatSelect.innerHTML = '<option value="" disabled selected>اختر القسم</option>';
+        editProductCatSelect.innerHTML = '<option value="" disabled selected>اختر القسم</option>';
+
+        if (querySnapshot.empty && tableBody) {
+            tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">لا توجد أقسام مضافة.</td></tr>';
+            return;
+        }
+
+        querySnapshot.forEach((docSnap) => {
+            const cat = docSnap.data();
+            cat.id = docSnap.id;
+
+            // إضافة للجدول
+            if(tableBody) {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td><i class="${cat.icon}" style="font-size: 20px; color: var(--primary);"></i></td>
+                        <td>${cat.name}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteCategory('${cat.id}')">
+                                <i class="fa-solid fa-trash"></i> حذف
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // إضافة لقوائم اختيار المنتجات
+            const optionHTML = `<option value="${cat.name}">${cat.name}</option>`;
+            productCatSelect.innerHTML += optionHTML;
+            editProductCatSelect.innerHTML += optionHTML;
+        });
+    } catch (error) {
+        console.error("Error loading categories: ", error);
+        if(tableBody) tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red;">خطأ في تحميل الأقسام.</td></tr>';
+    }
+}
+
+// إضافة قسم جديد
+if(addCategoryForm) {
+    addCategoryForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        submitCatBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإضافة...';
+        submitCatBtn.disabled = true;
+
+        const name = document.getElementById('catName').value;
+        const icon = document.getElementById('catIcon').value;
+
+        try {
+            await addDoc(collection(db, "categories"), { name, icon });
+            addCategoryForm.reset();
+            loadCategories(); // تحديث القوائم والجدول
+            alert("تمت إضافة القسم بنجاح!");
+        } catch (error) {
+            console.error("Error adding category: ", error);
+            alert("حدث خطأ أثناء الإضافة.");
+        } finally {
+            submitCatBtn.innerHTML = '<i class="fa-solid fa-plus"></i> إضافة القسم';
+            submitCatBtn.disabled = false;
+        }
+    });
+}
+
+// حذف قسم
+window.deleteCategory = async function(catId) {
+    if (confirm('هل أنت متأكد من حذف هذا القسم؟')) {
+        try {
+            await deleteDoc(doc(db, "categories", catId));
+            loadCategories(); 
+        } catch (error) {
+            console.error("Error deleting category: ", error);
+            alert('حدث خطأ أثناء الحذف.');
+        }
+    }
+};
+
+// استدعاء الدالة عند تحميل صفحة الأدمن
+loadCategories();
