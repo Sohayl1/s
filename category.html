@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قسم - مكتبة نور</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="bg-shapes"></div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <header>
+        <div class="header-right">
+            <a href="index.html" style="text-decoration:none;">
+                <div class="logo">مكتبة <span class="text-orange">نور</span></div>
+            </a>
+            <div class="dropdown">
+                <button id="categoriesBtn" class="dropbtn">الأقسام <i class="fa-solid fa-chevron-down"></i></button>
+                <div id="categoriesDropdown" class="dropdown-content"></div>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="ابحث داخل القسم...">
+            <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <div class="header-actions">
+            <button id="cartBtn" class="icon-btn">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="cart-badge">0</span>
+            </button>
+            <button id="loginBtn" class="login-btn"><i class="fa-regular fa-user"></i> تسجيل الدخول</button>
+            <button id="myOrdersBtn" class="icon-btn" style="display:none; color: var(--primary);" title="طلباتي">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </button>
+            <button id="userProfileBtn" class="login-btn" style="display:none; background-color: var(--secondary);">
+                <i class="fa-regular fa-user"></i> <span id="userNameDisplay">حسابي</span>
+            </button>
+            <button id="logoutBtn" class="icon-btn logout-icon" style="display:none;" title="تسجيل الخروج">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+            <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+        </div>
+    </header>
+
+    <div id="overlay" class="overlay"></div>
+
+    <!-- نفس النوافذ المنبثقة من الصفحة الرئيسية -->
+    <div id="loginModal" class="modal">
+        <div class="modal-icon"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+        <h2 class="modal-title">مرحباً بك مجدداً</h2>
+        <div class="input-group">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" id="loginEmail" class="modal-input" placeholder="البريد الإلكتروني" required>
+        </div>
+        <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="loginPassword" class="modal-input" placeholder="كلمة المرور" required>
+        </div>
+        <button id="googleLoginBtn" class="modal-submit google-btn">
+            <i class="fa-brands fa-google"></i> الدخول بواسطة جوجل
+        </button>
+        <p class="modal-link">ليس لديك حساب؟ <span id="showSignup">إنشاء حساب جديد</span></p>
+        <button id="doLoginBtn" class="modal-submit">تسجيل الدخول</button>
+    </div>
+
+    <div id="signupModal" class="modal">
+        <div class="modal-icon"><i class="fa-solid fa-user-plus"></i></div>
+        <h2 class="modal-title">إنشاء حساب جديد</h2>
+        <div class="input-group">
+            <i class="fa-regular fa-user"></i>
+            <input type="text" id="signupName" class="modal-input" placeholder="الاسم الكامل" required>
+        </div>
+        <div class="input-group">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" id="signupEmail" class="modal-input" placeholder="البريد الإلكتروني" required>
+        </div>
+        <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="signupPassword" class="modal-input" placeholder="كلمة المرور" required>
+        </div>
+        <p class="modal-link">لديك حساب بالفعل؟ <span id="showLogin">تسجيل الدخول</span></p>
+        <button id="doSignupBtn" class="modal-submit">إنشاء الحساب</button>
+    </div>
+
+    <div id="cartModal" class="modal cart-modal">
+        <h2 class="modal-title"><i class="fa-solid fa-cart-shopping"></i> عربة التسوق</h2>
+        <div class="cart-items"></div>
+        <div class="cart-summary" style="margin-top:15px; border-top:1px dashed var(--gray-light); padding-top:15px;">
+            <div class="summary-row total-price">
+                <span>قيمة المنتجات:</span>
+                <span>0 ج.م</span>
+            </div>
+            <div class="promo-code-section" style="margin-top:15px; border-top:1px dashed var(--gray-light); padding-top:15px;">
+                <div class="input-group" style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="promoCodeInput" class="modal-input" placeholder="أدخل كود الخصم" style="margin-bottom:0;">
+                    <button onclick="window.applyPromoCode()" class="btn-primary" style="padding:10px 20px; font-size:14px; flex:none; width:auto;">تطبيق</button>
+                </div>
+                <p id="promoMsg" style="font-size:13px; font-weight:700; display:none;"></p>
+            </div>
+            <button class="modal-submit checkout-btn" onclick="window.openCheckoutStep()">متابعة لإتمام الطلب <i class="fa-solid fa-arrow-left"></i></button>
+        </div>
+    </div>
+
+    <div id="checkoutModal" class="modal">
+        <h2 class="modal-title"><i class="fa-solid fa-money-check-dollar"></i> تفاصيل الاستلام والدفع</h2>
+        <div class="delivery-methods" style="margin-bottom:25px;">
+            <label class="delivery-card active" id="chkHomeCard">
+                <input type="radio" name="checkoutMethod" value="home" checked onchange="window.toggleCheckoutForm()">
+                <div class="method-info">
+                    <i class="fa-solid fa-house-chimney"></i>
+                    <span>توصيل للمنزل</span>
+                </div>
+            </label>
+            <label class="delivery-card" id="chkPickupCard">
+                <input type="radio" name="checkoutMethod" value="pickup" onchange="window.toggleCheckoutForm()">
+                <div class="method-info">
+                    <i class="fa-solid fa-store"></i>
+                    <span>استلام من المحل</span>
+                </div>
+            </label>
+        </div>
+        <div id="homeDeliveryForm" class="checkout-form">
+            <div class="input-group">
+                <input type="text" id="homeName" class="modal-input" placeholder="الاسم بالكامل" required>
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="input-group">
+                <input type="tel" id="homePhone" class="modal-input" placeholder="رقم التليفون" required>
+                <i class="fa-solid fa-phone"></i>
+            </div>
+            <div class="input-group">
+                <input type="text" id="homeAddress" class="modal-input" placeholder="العنوان بالتفصيل" required>
+                <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div class="vf-cash-notice">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <div>
+                    <p>برجاء تحويل مبلغ <strong><span id="vfTotal">0</span> ج.م</strong> (شامل 30 ج.م توصيل) على فودافون كاش رقم:</p>
+                    <h3>0100000000</h3>
+                </div>
+            </div>
+        </div>
+        <div id="pickupForm" class="checkout-form" style="display:none;">
+            <div class="input-group">
+                <input type="text" id="pickupName" class="modal-input" placeholder="اسم صاحب الطلب" required>
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="input-group" style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:5px; color:var(--gray); font-size:14px;">متى ترغب في الاستلام؟</label>
+                <input type="datetime-local" id="pickupTime" class="modal-input" required>
+            </div>
+            <div class="store-notice">
+                <i class="fa-solid fa-handshake"></i>
+                <p>الدفع عند الاستلام في المحل. الإجمالي المطلوب: <strong><span id="pickupTotal">0</span> ج.م</strong></p>
+            </div>
+        </div>
+        <button class="modal-submit" style="margin-top:20px; background-color:var(--success);" onclick="window.confirmFinalOrder()">
+            <i class="fa-solid fa-check-double"></i> تأكيد وإرسال الطلب
+        </button>
+    </div>
+
+    <div id="ordersModal" class="modal">
+        <h2 class="modal-title"><i class="fa-solid fa-clipboard-list"></i> سجل طلباتي</h2>
+        <div id="ordersList" class="orders-container">
+            <p style="text-align:center; color:gray;">جاري تحميل طلباتك...</p>
+        </div>
+    </div>
+
+    <main>
+        <!-- ترويسة القسم -->
+        <section class="category-hero" style="padding:40px 5%; text-align:center;">
+            <p style="color:var(--gray); margin-bottom:8px;">
+                <a href="index.html" style="color:var(--gray); text-decoration:none;">الرئيسية</a>
+                <i class="fa-solid fa-chevron-left" style="font-size:11px; margin:0 6px;"></i>
+                <span>الأقسام</span>
+                <i class="fa-solid fa-chevron-left" style="font-size:11px; margin:0 6px;"></i>
+                <span id="catBreadcrumb">...</span>
+            </p>
+            <h1 style="font-size:2rem; margin:0;">
+                <i id="catIcon" class="fa-solid fa-border-all" style="color:var(--primary); margin-left:10px;"></i>
+                <span id="catTitle">جاري التحميل...</span>
+            </h1>
+            <p id="catCount" style="color:var(--gray); margin-top:10px;"></p>
+        </section>
+
+        <!-- شريط الأقسام للتنقل السريع -->
+        <section class="store-categories-section">
+            <div class="sub-categories" id="categoriesSlider">
+                <a href="index.html" class="sub-cat" style="text-decoration:none;">
+                    <i class="fa-solid fa-border-all"></i> الكل
+                </a>
+            </div>
+        </section>
+
+        <!-- منتجات القسم -->
+        <section class="product-cards">
+            <div class="grid-container" id="productsGrid">
+                <p style="text-align:center; grid-column:1/-1; padding:50px; color:var(--gray);">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:var(--primary);"></i><br><br>
+                    جاري تحميل المنتجات...
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo footer-logo">مكتبة <span class="text-orange">نور</span></div>
+            <p>وجهتك الأولى لتجهيز طلبات المدارس والأدوات المكتبية</p>
+            <div class="social-links">
+                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>جميع الحقوق محفوظة &copy; 2026 مكتبة نور</p>
+        </div>
+    </footer>
+
+    <nav class="mobile-bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="#" class="nav-item active" id="mobileCategoriesBtn">
+            <i class="fa-solid fa-border-all"></i>
+            <span>الأقسام</span>
+        </a>
+        <a href="#" class="nav-item" id="mobileAccountBtn">
+            <i class="fa-regular fa-user"></i>
+            <span>حسابي</span>
+        </a>
+    </nav>
+
+    <!-- مهم: نفس script.js اللي عندك (فيه السلة والدخول) -->
+    <script type="module" src="script.js"></script>
+    <!-- سكريبت صفحة القسم -->
+    <script type="module" src="category.js"></script>
+
+    <a href="https://wa.me/201140611192" class="whatsapp-float" target="_blank" rel="noopener noreferrer" title="تواصل معنا على واتساب">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+</body>
+</html>

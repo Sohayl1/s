@@ -580,21 +580,24 @@ async function fetchStoreCategories() {
         dropdown.innerHTML = '';
         slider.innerHTML = '<div class="sub-cat active" onclick="window.filterProducts(\'all\', this)">الكل</div>';
 
-        querySnapshot.forEach((docSnap) => {
-            const cat = docSnap.data();
-            
-            dropdown.innerHTML += `
-                <a href="#" onclick="window.filterProducts('${cat.name}')">
-                    <i class="${cat.icon}"></i> ${cat.name}
-                </a>
-            `;
-            
-slider.innerHTML += `
-    <div class="sub-cat" onclick="window.filterProducts('${cat.name}', this)">
-        <i class="${cat.icon}"></i> ${cat.name}
-    </div>
-`;
-        });
+querySnapshot.forEach((docSnap) => {
+    const cat = docSnap.data();
+    const catUrl = `category.html?name=${encodeURIComponent(cat.name)}`;
+    
+    // القائمة المنسدلة في الهيدر -> تفتح صفحة القسم
+    dropdown.innerHTML += `
+        <a href="${catUrl}">
+            <i class="${cat.icon}"></i> ${cat.name}
+        </a>
+    `;
+    
+    // شريط الأقسام في الصفحة الرئيسية -> يفتح صفحة القسم
+    slider.innerHTML += `
+        <a href="${catUrl}" class="sub-cat" style="text-decoration:none;">
+            <i class="${cat.icon}"></i> ${cat.name}
+        </a>
+    `;
+});
     } catch (error) {
         console.error("Error fetching categories: ", error);
     }
