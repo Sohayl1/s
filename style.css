@@ -1,15 +1,15 @@
 :root {
-    --primary: #49a800; 
-    --primary-hover: #3e7c00;
+    --primary: #2fb9c8; 
+    --primary-hover: #00707c;
     --secondary: #173163; 
     --secondary-hover: #111d33;
     --dark: #2c3e50;
     --dark-light: #34495e;
     --light: #f8fafc;
-    --gray: #7f8c8d;
+    --gray: #333333; /* التعديل هنا: كان #7f8c8d */
     --gray-light: #e2e8f0;
     --white: #ffffff;
-    --danger: #e74c3c;
+    --danger: #3c9ae7;
     --success: #2ecc71;
     --shadow-sm: 0 2px 8px rgba(26, 43, 76, 0.04);
     --shadow-md: 0 8px 16px rgba(26, 43, 76, 0.08);
@@ -31,7 +31,7 @@ html, body {
     color: var(--dark);
     line-height: 1.6;
     width: 100%;
-    overflow-x: hidden; /* السطر ده هو اللي هيقتل أي سكرول يمين وشمال في الموبايل للأبد */
+    overflow-x: clip; /* استخدمنا clip بدلاً من hidden عشان الـ sticky يشتغل */
 }
 
 .text-orange {
@@ -47,7 +47,7 @@ header {
     border-bottom: 1px solid var(--gray-light);
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 997; /* رفعنا الرقم عشان الناف بار تكون دايماً فوق كل محتوى الموقع */
     box-shadow: var(--shadow-sm);
 }
 
@@ -2101,4 +2101,130 @@ footer {
     #userNameDisplay {
         display: none;
     }
+}
+
+/* ========== نافذة الأقسام الشاملة ========== */
+.full-categories-menu {
+    position: fixed;
+    top: 0;      
+    bottom: 65px; /* التعديل هنا: سيبنا مسافة 65 بيكسل من تحت عشان القائمة السفلية تفضل ظاهرة */
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column; 
+    z-index: 998; /* التعديل التاني: قللنا الرقم شوية عشان القائمة السفلية تفضل فوقه */
+    direction: rtl;
+}
+
+/* هيدر نافذة الأقسام */
+.full-cats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #eeeeee;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    z-index: 2;
+}
+
+.full-cats-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--primary, #28c1f0);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-cats-btn {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 18px;
+    color: #555;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.close-cats-btn:active {
+    background: #eee;
+}
+
+/* جسم النافذة الذي يحتوي على اليمين واليسار */
+.full-cats-body {
+    display: flex;
+    flex: 1; /* يأخذ باقي المساحة المتاحة تحت الهيدر */
+    overflow: hidden; /* لمنع تمرير الشاشة بالكامل */
+}
+
+/* القائمة الجانبية اليمنى (الأقسام الرئيسية) */
+.cats-sidebar {
+    width: 30%;
+    background: #f4f5f7;
+    overflow-y: auto;
+    border-left: 1px solid #eeeeee;
+}
+
+.cat-tab {
+    padding: 18px 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    cursor: pointer;
+    border-bottom: 1px solid #e9e9e9;
+    transition: all 0.3s ease;
+}
+
+.cat-tab.active {
+    background: #ffffff;
+    color: var(--primary, #28d2f0);
+    border-right: 4px solid var(--primary, #28c8f0);
+}
+
+/* محتوى الأقسام الفرعية اليسرى */
+.cats-content {
+    width: 70%;
+    background: #ffffff;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.subcat-group-title {
+    color: var(--primary, #28f0ed);
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.subcat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.subcat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+}
+
+.subcat-item span {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
 }

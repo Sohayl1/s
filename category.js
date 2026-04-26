@@ -14,11 +14,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ==========================================
-// 1. قراءة اسم القسم من رابط الصفحة
-// ==========================================
+// 1. قراءة البيانات من الرابط
 const urlParams = new URLSearchParams(window.location.search);
 const categoryName = urlParams.get('name');
+let subCategoryFromUrl = urlParams.get('sub');
 
 const catTitleEl = document.getElementById('catTitle');
 const catBreadcrumbEl = document.getElementById('catBreadcrumb');
@@ -26,24 +25,25 @@ const catIconEl = document.getElementById('catIcon');
 const catCountEl = document.getElementById('catCount');
 const productsGrid = document.getElementById('productsGrid');
 
-// مصفوفة لحفظ منتجات القسم الحالي عشان الفلترة السريعة
 let currentCategoryProducts = []; 
 
+// تهيئة واجهة الصفحة
 if (!categoryName) {
     if (catTitleEl) catTitleEl.textContent = 'القسم غير محدد';
-    if (productsGrid) productsGrid.innerHTML = `
-        <p style="text-align:center; grid-column:1/-1; padding:50px; color:var(--gray);">
-            من فضلك اختر قسم من <a href="index.html" style="color:var(--primary);">الصفحة الرئيسية</a>.
-        </p>`;
 } else {
-    if (catTitleEl) catTitleEl.textContent = categoryName;
-    if (catBreadcrumbEl) catBreadcrumbEl.textContent = categoryName;
-    document.title = `${categoryName} - مكتبة نور`;
+    // لو فيه قسم فرعي، نعرضه في العنوان
+    if (subCategoryFromUrl) {
+        if (catTitleEl) catTitleEl.textContent = `${subCategoryFromUrl} - ${categoryName}`;
+        if (catBreadcrumbEl) catBreadcrumbEl.textContent = `${categoryName} > ${subCategoryFromUrl}`;
+        document.title = `${subCategoryFromUrl} - ${categoryName} - مكتبة نور`;
+    } else {
+        if (catTitleEl) catTitleEl.textContent = categoryName;
+        if (catBreadcrumbEl) catBreadcrumbEl.textContent = categoryName;
+        document.title = `${categoryName} - مكتبة نور`;
+    }
 }
 
-// ==========================================
-// 2. جلب أيقونة القسم من Firestore
-// ==========================================
+// 2. جلب أيقونة القسم
 async function loadCategoryInfo() {
     if (!categoryName) return;
     try {
@@ -53,18 +53,12 @@ async function loadCategoryInfo() {
             const cat = docSnap.data();
             if (cat.icon && catIconEl) {
                 catIconEl.className = cat.icon;
-                catIconEl.style.color = 'var(--primary)';
-                catIconEl.style.marginLeft = '10px';
             }
         });
-    } catch (e) {
-        console.error("Error loading category info:", e);
-    }
+    } catch (e) { console.error(e); }
 }
 
-// ==========================================
-// 3. جلب الأقسام الفرعية وعرضها كفلاتر (الجديد)
-// ==========================================
+// 3. جلب شريط الأقسام الفرعية (السلايدر العلوي)
 async function loadSubCategoriesBar() {
     const slider = document.getElementById('categoriesSlider');
     if (!slider || !categoryName) return;
@@ -73,186 +67,236 @@ async function loadSubCategoriesBar() {
         const q = query(collection(db, "subCategories"), where("parentCategory", "==", categoryName));
         const snap = await getDocs(q);
         
-        // زرار "الكل" الأساسي
+        // زرار "الكل" - يظهر كل المنتجات في القسم الرئيسي
         slider.innerHTML = `
-            <div class="sub-cat active" onclick="window.filterBySubCategory('all', this)" style="cursor:pointer;">
+            <div class="sub-cat ${!subCategoryFromUrl ? 'active' : ''}" onclick="window.filterBySubCategory('all', this)" style="cursor:pointer;">
                 <i class="fa-solid fa-border-all"></i> الكل
             </div>
         `;
 
         snap.forEach((docSnap) => {
             const subCat = docSnap.data();
+            const activeClass = (subCategoryFromUrl === subCat.name) ? 'active' : '';
             slider.innerHTML += `
-                <div class="sub-cat" onclick="window.filterBySubCategory('${subCat.name}', this)" style="cursor:pointer;">
+                <div class="sub-cat ${activeClass}" onclick="window.filterBySubCategory('${subCat.name.replace(/'/g, "\\'")}', this)" style="cursor:pointer;">
                     ${subCat.name}
                 </div>
             `;
         });
-    } catch (e) {
-        console.error("Error loading subcategories bar:", e);
-    }
+    } catch (e) { console.error(e); }
 }
 
-// دالة الفلترة السريعة (تشتغل لما تدوس على قسم فرعي)
-window.filterBySubCategory = function(subCategoryName, element) {
-    // تلوين الزرار المختار
-    document.querySelectorAll('#categoriesSlider .sub-cat').forEach(el => el.classList.remove('active'));
-    element.classList.add('active');
-
-    // فلترة المنتجات المحملة مسبقاً
-    let filteredProducts = currentCategoryProducts;
-    if (subCategoryName !== 'all') {
-        filteredProducts = currentCategoryProducts.filter(p => p.subCategory === subCategoryName);
-    }
-
-    renderProductsHTML(filteredProducts, subCategoryName);
-};
-
-// ==========================================
-// 4. جلب منتجات القسم الرئيسي
-// ==========================================
+// 4. جلب المنتجات وتصفيتها حسب القسم الفرعي لو موجود
 async function fetchCategoryProducts() {
     if (!productsGrid || !categoryName) return;
 
     try {
-        const q = query(
-            collection(db, "products"),
-            where("category", "==", categoryName),
-            orderBy("createdAt", "desc")
-        );
+        // لو في subCategoryFromUrl، بنجيب المنتجات اللي subCategory بتاعها بيساويه
+        // لو مفيش، بنجيب كل منتجات القسم الرئيسي
+        let q;
+        if (subCategoryFromUrl) {
+            q = query(
+                collection(db, "products"),
+                where("category", "==", categoryName),
+                where("subCategory", "==", subCategoryFromUrl),
+                orderBy("createdAt", "desc")
+            );
+        } else {
+            q = query(
+                collection(db, "products"),
+                where("category", "==", categoryName),
+                orderBy("createdAt", "desc")
+            );
+        }
+
         const querySnapshot = await getDocs(q);
+        console.log(`✅ تم جلب ${querySnapshot.size} منتج للقسم "${categoryName}"` + (subCategoryFromUrl ? ` > "${subCategoryFromUrl}"` : ''));
 
         currentCategoryProducts = [];
         querySnapshot.forEach((doc) => {
-            let pData = doc.data();
-            pData.id = doc.id;
-            currentCategoryProducts.push(pData);
+            currentCategoryProducts.push({ id: doc.id, ...doc.data() });
         });
 
-        // عرض كل المنتجات في البداية
-        renderProductsHTML(currentCategoryProducts, 'all');
+        // رسم المنتجات
+        renderProductsHTML(currentCategoryProducts);
         setupSearch();
 
     } catch (error) {
-        console.error("Error fetching category products:", error);
-        productsGrid.innerHTML = `
-            <p style="text-align:center; grid-column:1/-1; padding:50px; color:var(--danger);">
-                حدث خطأ أثناء تحميل المنتجات. حاول مرة أخرى.
-            </p>`;
+        console.error("❌ خطأ في جلب المنتجات:", error);
+        productsGrid.innerHTML = `<p style="text-align:center; grid-column:1/-1; padding:50px; color:red;">حدث خطأ أثناء تحميل البيانات: ${error.message}</p>`;
     }
 }
 
-// دالة رسم المنتجات في الـ HTML
-function renderProductsHTML(productsArray, currentFilter) {
+// دالة الرسم بنظام المجموعات (الصفوف حسب القسم الفرعي)
+function renderProductsHTML(productsArray) {
     productsGrid.innerHTML = '';
 
     if (productsArray.length === 0) {
         productsGrid.innerHTML = `
-            <p style="text-align:center; grid-column:1/-1; padding:50px; color:var(--gray);">
-                <i class="fa-solid fa-box-open" style="font-size:2.5rem; color:var(--gray-light); margin-bottom:15px;"></i><br>
-                لا توجد منتجات في "${currentFilter === 'all' ? categoryName : currentFilter}" حالياً.
-            </p>`;
-        if (catCountEl) catCountEl.textContent = '0 منتج';
+            <div style="text-align:center; grid-column:1/-1; padding:50px; color:var(--gray);">
+                <i class="fa-solid fa-box-open" style="font-size:50px; display:block; margin-bottom:15px; opacity:0.5;"></i>
+                <p style="font-size:18px; margin:0;">لا توجد منتجات في هذا القسم حالياً</p>
+                <p style="font-size:14px; margin-top:5px; opacity:0.7;">${subCategoryFromUrl ? `القسم الفرعي: ${subCategoryFromUrl}` : `القسم: ${categoryName}`}</p>
+            </div>`;
+        if (catCountEl) catCountEl.textContent = `0 منتج`;
         return;
     }
 
-    productsArray.forEach((product) => {
-        // حساب شكل السعر لو فيه خصم
-        const priceHTML = product.oldPrice 
-            ? `<span style="text-decoration:line-through; color:#999; font-size:12px; margin-left:5px;">${product.oldPrice}</span> <span class="price">${product.price} ج.م</span>`
-            : `<span class="price">${product.price} ج.م</span>`;
+    // لو إحنا في قسم فرعي محدد، نعرض المنتجات مباشرة بدون تجميع
+    if (subCategoryFromUrl) {
+        const rowSection = document.createElement('div');
+        rowSection.className = 'subcategory-row';
+        rowSection.style.cssText = "grid-column: 1/-1; margin-bottom: 40px; width:100%;";
 
-        // إظهار بادج القسم الفرعي لو موجود
-        const subCatBadge = product.subCategory 
-            ? `<span style="position:absolute; top:10px; right:10px; background:var(--primary); color:#fff; font-size:10px; padding:3px 8px; border-radius:12px; z-index:2;">${product.subCategory}</span>` 
-            : '';
-
-        productsGrid.innerHTML += `
-            <div class="card" data-id="${product.id}" data-category="${product.category}" data-subcategory="${product.subCategory || ''}">
-                <a href="product.html?id=${product.id}" class="product-link" style="position:relative; display:block;">
-                    ${subCatBadge}
-                    <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
-                </a>
-                <div class="card-content">
-                    <a href="product.html?id=${product.id}" class="product-link">
-                        <h3>${product.name}</h3>
-                    </a>
-                    <p class="brand"><i class="fa-solid fa-tag"></i> الماركة: ${product.brand || '-'}</p>
-                    <div class="card-footer">
-                        <div>${priceHTML}</div>
-                        <button class="add-to-cart-btn"><i class="fa-solid fa-cart-plus"></i></button>
+        rowSection.innerHTML = `
+            <div class="section-header" style="margin-bottom:20px; background: var(--secondary); padding: 10px 20px; border-radius: 10px; color: white;">
+                <h2 style="font-size: 1.2rem; margin:0;"><i class="fa-solid fa-tag"></i> ${subCategoryFromUrl}</h2>
+            </div>
+            <div class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px;">
+                ${productsArray.map(product => {
+                    const priceHTML = product.oldPrice 
+                        ? `<span style="text-decoration:line-through; color:#999; font-size:12px; margin-left:5px;">${product.oldPrice}</span> <span class="price">${product.price} ج.م</span>`
+                        : `<span class="price">${product.price} ج.م</span>`;
+                        
+                    return `
+                    <div class="card" data-id="${product.id}" data-category="${product.category}" data-subcategory="${product.subCategory || ''}">
+                        <a href="product.html?id=${product.id}" class="product-link">
+                            <div class="product-img" style="background-image: url('${product.imageUrl}'); height:150px; background-size:cover; background-position:center;"></div>
+                        </a>
+                        <div class="card-content" style="padding:12px;">
+                            <h3 style="font-size:14px; height:40px; overflow:hidden;">${product.name}</h3>
+                            <div class="card-footer" style="margin-top:10px; padding-top:10px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                                <div>${priceHTML}</div>
+                                <button class="add-to-cart-btn" style="border:none; background:none; cursor:pointer; font-size:18px; color:var(--secondary);"><i class="fa-solid fa-cart-plus"></i></button>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                `}).join('')}
             </div>
         `;
-    });
+        productsGrid.appendChild(rowSection);
+    } 
+    // لو في القسم الرئيسي (الكل)، نجمع حسب الأقسام الفرعية
+    else {
+        const groups = productsArray.reduce((acc, product) => {
+            const subName = product.subCategory || "أصناف متنوعة";
+            if (!acc[subName]) acc[subName] = [];
+            acc[subName].push(product);
+            return acc;
+        }, {});
+
+        const sortedSubNames = Object.keys(groups);
+
+        sortedSubNames.forEach(subName => {
+            const groupProducts = groups[subName];
+            const rowSection = document.createElement('div');
+            rowSection.className = 'subcategory-row';
+            rowSection.style.cssText = "grid-column: 1/-1; margin-bottom: 40px; width:100%;";
+
+            rowSection.innerHTML = `
+                <div class="section-header" style="margin-bottom:20px; background: var(--secondary); padding: 10px 20px; border-radius: 10px; color: white;">
+                    <h2 style="font-size: 1.2rem; margin:0;"><i class="fa-solid fa-tag"></i> ${subName}</h2>
+                </div>
+                <div class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px;">
+                    ${groupProducts.map(product => {
+                        const priceHTML = product.oldPrice 
+                            ? `<span style="text-decoration:line-through; color:#999; font-size:12px; margin-left:5px;">${product.oldPrice}</span> <span class="price">${product.price} ج.م</span>`
+                            : `<span class="price">${product.price} ج.م</span>`;
+                            
+                        return `
+                        <div class="card" data-id="${product.id}" data-category="${product.category}" data-subcategory="${product.subCategory || ''}">
+                            <a href="product.html?id=${product.id}" class="product-link">
+                                <div class="product-img" style="background-image: url('${product.imageUrl}'); height:150px; background-size:cover; background-position:center;"></div>
+                            </a>
+                            <div class="card-content" style="padding:12px;">
+                                <h3 style="font-size:14px; height:40px; overflow:hidden;">${product.name}</h3>
+                                <div class="card-footer" style="margin-top:10px; padding-top:10px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>${priceHTML}</div>
+                                    <button class="add-to-cart-btn" style="border:none; background:none; cursor:pointer; font-size:18px; color:var(--secondary);"><i class="fa-solid fa-cart-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+            productsGrid.appendChild(rowSection);
+        });
+    }
 
     if (catCountEl) catCountEl.textContent = `${productsArray.length} منتج`;
 
-    // إعادة ربط أزرار إضافة للسلة بعد الرسم الجديد
+    // استدعاء الدالة العامة من الكود الثاني لتفعيل أزرار السلة
     if (typeof window.attachAddToCartEvents === 'function') {
         window.attachAddToCartEvents();
     } else {
-        attachLocalAddToCart();
+        console.warn("⚠️ دالة attachAddToCartEvents مش موجودة، في انتظار تحميل الكود الثاني...");
+        setTimeout(() => {
+            if (typeof window.attachAddToCartEvents === 'function') {
+                window.attachAddToCartEvents();
+                console.log("✅ تم تفعيل أزرار السلة بنجاح");
+            }
+        }, 1500);
     }
 }
 
-// ==========================================
-// 5. ربط احتياطي لأزرار السلة
-// ==========================================
-function attachLocalAddToCart() {
-    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const card = this.closest('.card');
-            
-            // قراءة السعر من العنصر اللي جواه السعر النهائي فقط (عشان نتجنب السعر القديم)
-            const priceText = card.querySelector('.price').textContent.replace(/\D/g, '');
+// الفلترة من الشريط العلوي (السلايدر) - تحديث الصفحة بنفس القسم الفرعي
+window.filterBySubCategory = function(subCategoryName, element) {
+    // تحديث تظليل الزرار النشط
+    document.querySelectorAll('#categoriesSlider .sub-cat').forEach(el => el.classList.remove('active'));
+    if (element) element.classList.add('active');
 
-            const productData = {
-                id: card.getAttribute('data-id'),
-                name: card.querySelector('h3').textContent,
-                price: parseInt(priceText),
-                image: card.querySelector('.product-img').style.backgroundImage.slice(5, -2).replace(/"/g, ""),
-                quantity: 1
-            };
+    if (subCategoryName === 'all') {
+        subCategoryFromUrl = null;
+        // تحديث الرابط بدون إعادة تحميل الصفحة
+        const newUrl = `category.html?name=${encodeURIComponent(categoryName)}`;
+        window.history.pushState({}, '', newUrl);
+        // تحديث العنوان
+        if (catTitleEl) catTitleEl.textContent = categoryName;
+        if (catBreadcrumbEl) catBreadcrumbEl.textContent = categoryName;
+        document.title = `${categoryName} - مكتبة نور`;
+    } else {
+        subCategoryFromUrl = subCategoryName;
+        // تحديث الرابط
+        const newUrl = `category.html?name=${encodeURIComponent(categoryName)}&sub=${encodeURIComponent(subCategoryName)}`;
+        window.history.pushState({}, '', newUrl);
+        // تحديث العنوان
+        if (catTitleEl) catTitleEl.textContent = `${subCategoryName} - ${categoryName}`;
+        if (catBreadcrumbEl) catBreadcrumbEl.textContent = `${categoryName} > ${subCategoryName}`;
+        document.title = `${subCategoryName} - ${categoryName} - مكتبة نور`;
+    }
+    
+    // إعادة جلب المنتجات بالفلتر الجديد
+    fetchCategoryProducts();
+};
 
-            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const idx = cart.findIndex(it => it.id === productData.id);
-            if (idx > -1) cart[idx].quantity += 1;
-            else cart.push(productData);
-            localStorage.setItem('cart', JSON.stringify(cart));
-
-            const badge = document.querySelector('.cart-badge');
-            if (badge) badge.textContent = cart.reduce((s, it) => s + it.quantity, 0);
-
-            const original = this.innerHTML;
-            this.innerHTML = '<i class="fa-solid fa-check"></i>';
-            setTimeout(() => { this.innerHTML = original; }, 1000);
-        });
-    });
-}
-
-// ==========================================
-// 6. البحث داخل القسم
-// ==========================================
+// نظام البحث
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
     if (!searchInput) return;
 
-    searchInput.addEventListener('input', () => {
-        const term = searchInput.value.trim().toLowerCase();
-        document.querySelectorAll('#productsGrid .card').forEach(card => {
-            const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
-            const brand = card.querySelector('.brand')?.textContent.toLowerCase() || '';
-            card.style.display = (title.includes(term) || brand.includes(term)) ? 'block' : 'none';
+    // إزالة الحدث القديم لو موجود
+    const newSearchInput = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+    
+    newSearchInput.addEventListener('input', () => {
+        const term = newSearchInput.value.trim().toLowerCase();
+        document.querySelectorAll('.subcategory-row').forEach(row => {
+            let hasMatch = false;
+            row.querySelectorAll('.card').forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                if (title.includes(term)) {
+                    card.style.display = 'block';
+                    hasMatch = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            row.style.display = hasMatch ? 'block' : 'none';
         });
     });
 }
 
-// ==========================================
-// تشغيل
-// ==========================================
+// تشغيل الدوال عند تحميل الصفحة
 loadCategoryInfo();
 loadSubCategoriesBar();
 fetchCategoryProducts();

@@ -107,6 +107,36 @@
             margin-bottom: 20px;
         }
         .refresh-stats-btn:hover { background: #0056b3; }
+
+        /* ========== ستايل رفع الصورة للقسم الفرعي ========== */
+        .file-upload-wrapper {
+            position: relative;
+            margin-top: 5px;
+        }
+        .file-upload-wrapper input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: border-color 0.3s;
+        }
+        .file-upload-wrapper input[type="file"]:hover {
+            border-color: #17a2b8;
+            background: #f0fdff;
+        }
+        .file-upload-wrapper small {
+            display: block;
+            margin-top: 8px;
+            color: #888;
+            font-size: 13px;
+        }
+        .file-upload-wrapper small i {
+            margin-left: 5px;
+            color: #17a2b8;
+        }
     </style>
 </head>
 <body>
@@ -138,6 +168,7 @@
                 </div>
             </header>
 
+            <!-- ==================== الإحصائيات ==================== -->
             <div id="stats-section" class="content-section" style="display: block;">
                 <div class="form-container">
                     <button id="refreshStatsBtn" class="refresh-stats-btn">
@@ -207,23 +238,20 @@
                 </div>
             </div>
 
+            <!-- ==================== إضافة منتج ==================== -->
             <div id="add-product-section" class="content-section" style="display: none;">
                 <div class="form-container">
                     <form id="addProductForm">
                         <div class="form-group">
                             <label>اسم المنتج</label>
-                            <input type="text" id="productName" required>
+                            <input type="text" id="productName" required placeholder="مثال: كشكول سلك 100 ورقة">
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label>الماركة</label>
-                                <input type="text" id="productBrand" required>
-                            </div>
-                            <div class="form-group">
                                 <label>القسم الرئيسي</label>
-                                <select id="productCategory" required>
-                                    <option value="" disabled selected>اختر القسم</option>
+                                <select id="productCategory">
+                                    <option value="الكل" selected>الكل (افتراضي)</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -236,41 +264,100 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label>السعر (ج.م)</label>
+                                <label>السعر الحالي (ج.م)</label>
                                 <input type="number" id="productPrice" required>
                             </div>
                             <div class="form-group">
                                 <label>السعر قبل الخصم <span class="optional-tag">(اختياري)</span></label>
-                                <input type="number" id="productOldPrice" placeholder="مثال: 100">
+                                <input type="number" id="productOldPrice" placeholder="اتركه فارغاً إذا لا يوجد خصم">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>رابط الصورة (URL)</label>
-                            <input type="url" id="productImage" required>
+                            <label>صورة المنتج (اختر ملف)</label>
+                            <input type="file" id="productImageFile" accept="image/*" required style="padding: 10px; background: #f8f9fa;">
+                            <input type="hidden" id="productImageUrl">
+                            <small id="uploadStatus" style="color: #666;"></small>
                         </div>
 
                         <div class="form-group">
                             <label>وصف المنتج <span class="optional-tag">(اختياري)</span></label>
-                            <textarea id="productDesc" rows="4"></textarea>
+                            <textarea id="productDesc" rows="3" placeholder="اكتب تفاصيل المنتج هنا..."></textarea>
                         </div>
 
                         <button type="submit" class="submit-btn" id="submitBtn">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج في قاعدة البيانات
+                            <i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج
                         </button>
                         <div id="successMessage" class="success-msg" style="display:none; color:green; margin-top:10px;">تمت إضافة المنتج بنجاح!</div>
                     </form>
                 </div>
             </div>
 
+            <!-- ==================== مودال تعديل المنتج ==================== -->
+            <div id="editModal" class="edit-modal">
+                <div class="edit-modal-content">
+                    <span class="close-edit" id="closeEditModal">&times;</span>
+                    <h2 style="margin-bottom: 20px;">تعديل بيانات المنتج</h2>
+                    <form id="editProductForm">
+                        <input type="hidden" id="editProductId">
+
+                        <div class="form-group">
+                            <label>اسم المنتج</label>
+                            <input type="text" id="editProductName" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>القسم الرئيسي</label>
+                                <select id="editProductCategory">
+                                    <option value="الكل">الكل</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>القسم الفرعي</label>
+                                <select id="editProductSubCategory">
+                                    <option value="">بدون قسم فرعي</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>السعر الحالي (ج.م)</label>
+                                <input type="number" id="editProductPrice" required>
+                            </div>
+                            <div class="form-group">
+                                <label>السعر قبل الخصم <span class="optional-tag">(اختياري)</span></label>
+                                <input type="number" id="editProductOldPrice" placeholder="مثال: 100">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>تغيير الصورة <span class="optional-tag">(اختياري - اتركه فارغاً للإبقاء على الصورة الحالية)</span></label>
+                            <input type="file" id="editProductImageFile" accept="image/*" style="padding: 10px; border: 2px dashed #ccc; border-radius: 8px; width: 100%;">
+                        </div>
+
+                        <div class="form-group">
+                            <label>وصف المنتج <span class="optional-tag">(اختياري)</span></label>
+                            <textarea id="editProductDesc" rows="4"></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="updateBtn" style="background-color: #007bff;">
+                            <i class="fa-solid fa-pen-to-square"></i> تحديث البيانات
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ==================== إدارة الأقسام ==================== -->
             <div id="manage-categories-section" class="content-section" style="display: none;">
                 <div class="form-container">
                     
-                    <h2>إضافة قسم رئيسي</h2>
+                    <h2>➕ إضافة قسم رئيسي</h2>
                     <form id="addCategoryForm" style="margin-bottom: 30px;">
                         <div class="form-group">
                             <label>اسم القسم (مثل: أدوات مدرسية)</label>
-                            <input type="text" id="catName" required>
+                            <input type="text" id="catName" required placeholder="اكتب اسم القسم الرئيسي">
                         </div>
                         <button type="submit" class="submit-btn" id="submitCatBtn" style="background-color: #28a745;">
                             <i class="fa-solid fa-plus"></i> إضافة القسم الرئيسي
@@ -279,7 +366,8 @@
 
                     <hr style="margin: 30px 0; border: 1px solid #eee;">
 
-                    <h2>إضافة قسم فرعي</h2>
+                    <!-- ========== فورم إضافة قسم فرعي (متجدد) ========== -->
+                    <h2>📁 إضافة قسم فرعي</h2>
                     <form id="addSubCategoryForm" style="margin-bottom: 30px;">
                         <div class="form-row">
                             <div class="form-group">
@@ -290,19 +378,36 @@
                             </div>
                             <div class="form-group">
                                 <label>اسم القسم الفرعي (مثل: كشاكيل، أقلام)</label>
-                                <input type="text" id="subCatName" required>
+                                <input type="text" id="subCatName" required placeholder="اكتب اسم القسم الفرعي">
                             </div>
                         </div>
-                        <button type="submit" class="submit-btn" id="submitSubCatBtn" style="background-color: #17a2b8;">
+
+                        <!-- ========== حقل رفع صورة القسم الفرعي ========== -->
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>
+                                🖼️ صورة القسم الفرعي 
+                                <span class="optional-tag">(اختياري - يفضل صورة مربعة)</span>
+                            </label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="subCatImageFile" accept="image/*">
+                                <small>
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    الصيغ المدعومة: JPG, PNG, WEBP - الحجم الأقصى: 5MB
+                                </small>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitSubCatBtn" style="background-color: #17a2b8; margin-top: 15px;">
                             <i class="fa-solid fa-code-branch"></i> إضافة القسم الفرعي
                         </button>
                     </form>
 
                     <hr style="margin: 30px 0; border: 1px solid #eee;">
 
+                    <!-- ========== جداول الأقسام ========== -->
                     <div class="form-row">
                         <div class="form-group">
-                            <h2>الأقسام الرئيسية</h2>
+                            <h2>📋 الأقسام الرئيسية</h2>
                             <table class="products-table">
                                 <thead>
                                     <tr>
@@ -316,17 +421,18 @@
                             </table>
                         </div>
                         <div class="form-group">
-                            <h2>الأقسام الفرعية</h2>
+                            <h2>📁 الأقسام الفرعية</h2>
                             <table class="products-table">
                                 <thead>
                                     <tr>
+                                        <th>الصورة</th>
                                         <th>القسم الفرعي</th>
                                         <th>يتبع لقسم</th>
                                         <th>إجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody id="subCategoriesTableBody">
-                                    <tr><td colspan="3" style="text-align: center;">جاري التحميل...</td></tr>
+                                    <tr><td colspan="4" style="text-align: center;">جاري التحميل...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -335,6 +441,7 @@
                 </div>
             </div>
 
+            <!-- ==================== إدارة المنتجات ==================== -->
             <div id="manage-products-section" class="content-section" style="display: none;">
                 <div class="form-container">
                     <h2>المنتجات المضافة</h2>
@@ -355,14 +462,92 @@
                 </div>
             </div>
 
-            <div id="orders-section" class="content-section" style="display: none;">
-                <div class="form-container" style="text-align: center; padding: 50px;">
-                    <i class="fa-solid fa-cart-flatbed" style="font-size: 50px; color: var(--gray); margin-bottom: 20px;"></i>
-                    <h2>طلبات العملاء</h2>
-                    <p style="color: var(--gray); margin-top: 10px;">قريباً..</p>
-                </div>
-            </div>
+         <!-- ==================== الطلبات ==================== -->
+<div id="orders-section" class="content-section" style="display: none;">
+    <div class="form-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin:0;">📦 إدارة الطلبات</h2>
+            <button id="refreshOrdersBtn" class="refresh-stats-btn">
+                <i class="fa-solid fa-arrows-rotate"></i> تحديث الطلبات
+            </button>
+        </div>
 
+        <!-- ملخص سريع للطلبات -->
+        <div class="stats-grid" style="margin-bottom: 25px;">
+            <div class="stat-card" style="border-right-color: #ffc107;">
+                <div class="stat-info">
+                    <h4>طلبات معلقة</h4>
+                    <div class="stat-value" id="pendingOrdersCount" style="color: #ffc107;">0</div>
+                    <div class="stat-sub">في انتظار التأكيد</div>
+                </div>
+                <div class="stat-icon" style="background: #ffc107;"><i class="fa-solid fa-clock"></i></div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-info">
+                    <h4>طلبات مكتملة</h4>
+                    <div class="stat-value" id="completedOrdersCount" style="color: #28a745;">0</div>
+                    <div class="stat-sub">تم التوصيل</div>
+                </div>
+                <div class="stat-icon" style="background: #28a745;"><i class="fa-solid fa-check-circle"></i></div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-info">
+                    <h4>طلبات ملغية</h4>
+                    <div class="stat-value" id="cancelledOrdersCount" style="color: #e74c3c;">0</div>
+                    <div class="stat-sub">ملغاة</div>
+                </div>
+                <div class="stat-icon" style="background: #e74c3c;"><i class="fa-solid fa-xmark-circle"></i></div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-info">
+                    <h4>إجمالي الطلبات</h4>
+                    <div class="stat-value" id="totalOrdersCount" style="color: #8e44ad;">0</div>
+                    <div class="stat-sub">كل الطلبات</div>
+                </div>
+                <div class="stat-icon" style="background: #8e44ad;"><i class="fa-solid fa-list-ol"></i></div>
+            </div>
+        </div>
+
+        <!-- فلترة حسب الحالة -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button class="order-filter-btn active" onclick="filterOrders('all', this)" style="background:#8e44ad; color:white; border:none; padding:8px 18px; border-radius:20px; cursor:pointer; font-family:inherit;">
+                الكل
+            </button>
+            <button class="order-filter-btn" onclick="filterOrders('pending', this)" style="background:#f0f0f0; color:#333; border:none; padding:8px 18px; border-radius:20px; cursor:pointer; font-family:inherit;">
+                ⏳ معلقة
+            </button>
+            <button class="order-filter-btn" onclick="filterOrders('completed', this)" style="background:#f0f0f0; color:#333; border:none; padding:8px 18px; border-radius:20px; cursor:pointer; font-family:inherit;">
+                ✅ مكتملة
+            </button>
+            <button class="order-filter-btn" onclick="filterOrders('cancelled', this)" style="background:#f0f0f0; color:#333; border:none; padding:8px 18px; border-radius:20px; cursor:pointer; font-family:inherit;">
+                ❌ ملغية
+            </button>
+        </div>
+
+        <!-- جدول الطلبات -->
+        <div style="overflow-x: auto;">
+            <table class="products-table" style="min-width: 900px;">
+                <thead>
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>العميل</th>
+                        <th>رقم الهاتف</th>
+                        <th>طريقة الدفع</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                        <th>الوقت</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <tr><td colspan="8" style="text-align: center;">جاري تحميل الطلبات...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+            <!-- ==================== العملاء ==================== -->
             <div id="customers-section" class="content-section" style="display: none;">
                 <div class="form-container" style="text-align: center; padding: 50px;">
                     <i class="fa-solid fa-users" style="font-size: 50px; color: var(--gray); margin-bottom: 20px;"></i>
@@ -373,64 +558,8 @@
         </main>
     </div>
 
-    <div id="editModal" class="edit-modal">
-        <div class="edit-modal-content">
-            <span class="close-edit" id="closeEditModal">&times;</span>
-            <h2 style="margin-bottom: 20px;">تعديل بيانات المنتج</h2>
-            <form id="editProductForm">
-                <input type="hidden" id="editProductId">
-
-                <div class="form-group">
-                    <label>اسم المنتج</label>
-                    <input type="text" id="editProductName" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>الماركة</label>
-                        <input type="text" id="editProductBrand" required>
-                    </div>
-                    <div class="form-group">
-                        <label>القسم الرئيسي</label>
-                        <select id="editProductCategory" required>
-                            <option value="">اختر القسم</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>القسم الفرعي</label>
-                        <select id="editProductSubCategory">
-                            <option value="">بدون قسم فرعي</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>السعر (ج.م)</label>
-                        <input type="number" id="editProductPrice" required>
-                    </div>
-                    <div class="form-group">
-                        <label>السعر قبل الخصم <span class="optional-tag">(اختياري)</span></label>
-                        <input type="number" id="editProductOldPrice" placeholder="مثال: 100">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>رابط الصورة (URL)</label>
-                    <input type="url" id="editProductImage" required>
-                </div>
-
-                <div class="form-group">
-                    <label>وصف المنتج <span class="optional-tag">(اختياري)</span></label>
-                    <textarea id="editProductDesc" rows="4"></textarea>
-                </div>
-
-                <button type="submit" class="submit-btn" id="updateBtn" style="background-color: #007bff;">
-                    <i class="fa-solid fa-pen-to-square"></i> تحديث بيانات المنتج
-                </button>
-            </form>
-        </div>
-    </div>
+    <!-- ==================== مودال تعديل المنتج (نسخة احتياطية - مش هتظهر) ==================== -->
+    <div id="editModalBackup" style="display: none;"></div>
 
     <script type="module" src="admin.js"></script>
 </body>
