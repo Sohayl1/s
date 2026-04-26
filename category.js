@@ -1,13 +1,6 @@
-// ==========================================
-// صفحة القسم - category.js
-// بتعرض منتجات قسم محدد جاي اسمه من رابط الصفحة
-// مثال: category.html?name=أقلام
-// ==========================================
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
-// نفس إعدادات الـ Firebase اللي في script.js
 const firebaseConfig = {
     apiKey: "AIzaSyCKQuF48pvctCNNYq60o2IMNC5XiEHWqpI",
     authDomain: "nourlibrary.firebaseapp.com",
@@ -33,6 +26,9 @@ const catIconEl = document.getElementById('catIcon');
 const catCountEl = document.getElementById('catCount');
 const productsGrid = document.getElementById('productsGrid');
 
+// مصفوفة لحفظ منتجات القسم الحالي عشان الفلترة السريعة
+let currentCategoryProducts = []; 
+
 if (!categoryName) {
     if (catTitleEl) catTitleEl.textContent = 'القسم غير محدد';
     if (productsGrid) productsGrid.innerHTML = `
@@ -46,7 +42,7 @@ if (!categoryName) {
 }
 
 // ==========================================
-// 2. جلب أيقونة القسم من Firestore (اختياري للتجميل)
+// 2. جلب أيقونة القسم من Firestore
 // ==========================================
 async function loadCategoryInfo() {
     if (!categoryName) return;
@@ -67,13 +63,58 @@ async function loadCategoryInfo() {
 }
 
 // ==========================================
-// 3. جلب منتجات القسم فقط
+// 3. جلب الأقسام الفرعية وعرضها كفلاتر (الجديد)
+// ==========================================
+async function loadSubCategoriesBar() {
+    const slider = document.getElementById('categoriesSlider');
+    if (!slider || !categoryName) return;
+
+    try {
+        const q = query(collection(db, "subCategories"), where("parentCategory", "==", categoryName));
+        const snap = await getDocs(q);
+        
+        // زرار "الكل" الأساسي
+        slider.innerHTML = `
+            <div class="sub-cat active" onclick="window.filterBySubCategory('all', this)" style="cursor:pointer;">
+                <i class="fa-solid fa-border-all"></i> الكل
+            </div>
+        `;
+
+        snap.forEach((docSnap) => {
+            const subCat = docSnap.data();
+            slider.innerHTML += `
+                <div class="sub-cat" onclick="window.filterBySubCategory('${subCat.name}', this)" style="cursor:pointer;">
+                    ${subCat.name}
+                </div>
+            `;
+        });
+    } catch (e) {
+        console.error("Error loading subcategories bar:", e);
+    }
+}
+
+// دالة الفلترة السريعة (تشتغل لما تدوس على قسم فرعي)
+window.filterBySubCategory = function(subCategoryName, element) {
+    // تلوين الزرار المختار
+    document.querySelectorAll('#categoriesSlider .sub-cat').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+
+    // فلترة المنتجات المحملة مسبقاً
+    let filteredProducts = currentCategoryProducts;
+    if (subCategoryName !== 'all') {
+        filteredProducts = currentCategoryProducts.filter(p => p.subCategory === subCategoryName);
+    }
+
+    renderProductsHTML(filteredProducts, subCategoryName);
+};
+
+// ==========================================
+// 4. جلب منتجات القسم الرئيسي
 // ==========================================
 async function fetchCategoryProducts() {
     if (!productsGrid || !categoryName) return;
 
     try {
-        // جلب المنتجات اللي الـ category بتاعتها = اسم القسم
         const q = query(
             collection(db, "products"),
             where("category", "==", categoryName),
@@ -81,52 +122,15 @@ async function fetchCategoryProducts() {
         );
         const querySnapshot = await getDocs(q);
 
-        productsGrid.innerHTML = '';
-
-        if (querySnapshot.empty) {
-            productsGrid.innerHTML = `
-                <p style="text-align:center; grid-column:1/-1; padding:50px; color:var(--gray);">
-                    <i class="fa-solid fa-box-open" style="font-size:2.5rem; color:var(--gray-light); margin-bottom:15px;"></i><br>
-                    لا توجد منتجات في قسم "<strong>${categoryName}</strong>" حالياً.
-                </p>`;
-            if (catCountEl) catCountEl.textContent = '0 منتج';
-            return;
-        }
-
-        let count = 0;
+        currentCategoryProducts = [];
         querySnapshot.forEach((doc) => {
-            const product = doc.data();
-            count++;
-            productsGrid.innerHTML += `
-                <div class="card" data-id="${doc.id}" data-category="${product.category}">
-                    <a href="product.html?id=${doc.id}" class="product-link">
-                        <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
-                    </a>
-                    <div class="card-content">
-                        <a href="product.html?id=${doc.id}" class="product-link">
-                            <h3>${product.name}</h3>
-                        </a>
-                        <p class="brand"><i class="fa-solid fa-tag"></i> الماركة: ${product.brand || '-'}</p>
-                        <div class="card-footer">
-                            <span class="price">${product.price} ج.م</span>
-                            <button class="add-to-cart-btn"><i class="fa-solid fa-cart-plus"></i></button>
-                        </div>
-                    </div>
-                </div>
-            `;
+            let pData = doc.data();
+            pData.id = doc.id;
+            currentCategoryProducts.push(pData);
         });
 
-        if (catCountEl) catCountEl.textContent = `${count} منتج`;
-
-        // ربط أزرار "إضافة للسلة" بنفس منطق script.js لو موجود
-        if (typeof window.attachAddToCartEvents === 'function') {
-            window.attachAddToCartEvents();
-        } else {
-            // ربط بسيط لو الدالة مش متاحة
-            attachLocalAddToCart();
-        }
-
-        // تفعيل البحث داخل القسم
+        // عرض كل المنتجات في البداية
+        renderProductsHTML(currentCategoryProducts, 'all');
         setupSearch();
 
     } catch (error) {
@@ -138,34 +142,90 @@ async function fetchCategoryProducts() {
     }
 }
 
+// دالة رسم المنتجات في الـ HTML
+function renderProductsHTML(productsArray, currentFilter) {
+    productsGrid.innerHTML = '';
+
+    if (productsArray.length === 0) {
+        productsGrid.innerHTML = `
+            <p style="text-align:center; grid-column:1/-1; padding:50px; color:var(--gray);">
+                <i class="fa-solid fa-box-open" style="font-size:2.5rem; color:var(--gray-light); margin-bottom:15px;"></i><br>
+                لا توجد منتجات في "${currentFilter === 'all' ? categoryName : currentFilter}" حالياً.
+            </p>`;
+        if (catCountEl) catCountEl.textContent = '0 منتج';
+        return;
+    }
+
+    productsArray.forEach((product) => {
+        // حساب شكل السعر لو فيه خصم
+        const priceHTML = product.oldPrice 
+            ? `<span style="text-decoration:line-through; color:#999; font-size:12px; margin-left:5px;">${product.oldPrice}</span> <span class="price">${product.price} ج.م</span>`
+            : `<span class="price">${product.price} ج.م</span>`;
+
+        // إظهار بادج القسم الفرعي لو موجود
+        const subCatBadge = product.subCategory 
+            ? `<span style="position:absolute; top:10px; right:10px; background:var(--primary); color:#fff; font-size:10px; padding:3px 8px; border-radius:12px; z-index:2;">${product.subCategory}</span>` 
+            : '';
+
+        productsGrid.innerHTML += `
+            <div class="card" data-id="${product.id}" data-category="${product.category}" data-subcategory="${product.subCategory || ''}">
+                <a href="product.html?id=${product.id}" class="product-link" style="position:relative; display:block;">
+                    ${subCatBadge}
+                    <div class="product-img" style="background-image: url('${product.imageUrl}'); background-size: cover; background-position: center;"></div>
+                </a>
+                <div class="card-content">
+                    <a href="product.html?id=${product.id}" class="product-link">
+                        <h3>${product.name}</h3>
+                    </a>
+                    <p class="brand"><i class="fa-solid fa-tag"></i> الماركة: ${product.brand || '-'}</p>
+                    <div class="card-footer">
+                        <div>${priceHTML}</div>
+                        <button class="add-to-cart-btn"><i class="fa-solid fa-cart-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    if (catCountEl) catCountEl.textContent = `${productsArray.length} منتج`;
+
+    // إعادة ربط أزرار إضافة للسلة بعد الرسم الجديد
+    if (typeof window.attachAddToCartEvents === 'function') {
+        window.attachAddToCartEvents();
+    } else {
+        attachLocalAddToCart();
+    }
+}
+
 // ==========================================
-// 4. ربط احتياطي لأزرار السلة (لو script.js مش بيشتغل قبلها)
+// 5. ربط احتياطي لأزرار السلة
 // ==========================================
 function attachLocalAddToCart() {
     document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const card = this.closest('.card');
+            
+            // قراءة السعر من العنصر اللي جواه السعر النهائي فقط (عشان نتجنب السعر القديم)
+            const priceText = card.querySelector('.price').textContent.replace(/\D/g, '');
+
             const productData = {
                 id: card.getAttribute('data-id'),
                 name: card.querySelector('h3').textContent,
-                price: parseInt(card.querySelector('.price').textContent.replace(/\D/g, '')),
+                price: parseInt(priceText),
                 image: card.querySelector('.product-img').style.backgroundImage.slice(5, -2).replace(/"/g, ""),
                 quantity: 1
             };
 
-            // قراءة السلة من localStorage
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
             const idx = cart.findIndex(it => it.id === productData.id);
             if (idx > -1) cart[idx].quantity += 1;
             else cart.push(productData);
             localStorage.setItem('cart', JSON.stringify(cart));
 
-            // تحديث العداد في الهيدر
             const badge = document.querySelector('.cart-badge');
             if (badge) badge.textContent = cart.reduce((s, it) => s + it.quantity, 0);
 
-            // تأثير زرار صح
             const original = this.innerHTML;
             this.innerHTML = '<i class="fa-solid fa-check"></i>';
             setTimeout(() => { this.innerHTML = original; }, 1000);
@@ -174,7 +234,7 @@ function attachLocalAddToCart() {
 }
 
 // ==========================================
-// 5. البحث داخل القسم
+// 6. البحث داخل القسم
 // ==========================================
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
@@ -191,31 +251,8 @@ function setupSearch() {
 }
 
 // ==========================================
-// 6. شريط الأقسام في الأعلى (للتنقل السريع بين الأقسام)
-// ==========================================
-async function loadCategoriesBar() {
-    const slider = document.getElementById('categoriesSlider');
-    if (!slider) return;
-
-    try {
-        const snap = await getDocs(collection(db, "categories"));
-        snap.forEach((docSnap) => {
-            const cat = docSnap.data();
-            const isActive = cat.name === categoryName ? 'active' : '';
-            slider.innerHTML += `
-                <a href="category.html?name=${encodeURIComponent(cat.name)}" class="sub-cat ${isActive}" style="text-decoration:none;">
-                    <i class="${cat.icon}"></i> ${cat.name}
-                </a>
-            `;
-        });
-    } catch (e) {
-        console.error("Error loading categories bar:", e);
-    }
-}
-
-// ==========================================
 // تشغيل
 // ==========================================
 loadCategoryInfo();
+loadSubCategoriesBar();
 fetchCategoryProducts();
-loadCategoriesBar();

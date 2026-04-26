@@ -26,6 +26,10 @@
 
         .optional-tag { color: #888; font-size: 12px; font-weight: normal; margin-right: 5px; }
 
+        /* ========== ترتيب الحقول ========== */
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+
         /* ========== ستايل الإحصائيات ========== */
         .stats-grid {
             display: grid;
@@ -134,7 +138,6 @@
                 </div>
             </header>
 
-            <!-- ============ الإحصائيات ============ -->
             <div id="stats-section" class="content-section" style="display: block;">
                 <div class="form-container">
                     <button id="refreshStatsBtn" class="refresh-stats-btn">
@@ -204,7 +207,6 @@
                 </div>
             </div>
 
-            <!-- ============ إضافة منتج ============ -->
             <div id="add-product-section" class="content-section" style="display: none;">
                 <div class="form-container">
                     <form id="addProductForm">
@@ -219,9 +221,15 @@
                                 <input type="text" id="productBrand" required>
                             </div>
                             <div class="form-group">
-                                <label>القسم <span class="optional-tag">(اختياري)</span></label>
-                                <select id="productCategory">
-                                    <option value="الكل" selected>الكل</option>
+                                <label>القسم الرئيسي</label>
+                                <select id="productCategory" required>
+                                    <option value="" disabled selected>اختر القسم</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>القسم الفرعي <span class="optional-tag">(اختياري)</span></label>
+                                <select id="productSubCategory">
+                                    <option value="">بدون قسم فرعي</option>
                                 </select>
                             </div>
                         </div>
@@ -250,41 +258,83 @@
                         <button type="submit" class="submit-btn" id="submitBtn">
                             <i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج في قاعدة البيانات
                         </button>
-                        <div id="successMessage" class="success-msg">تمت إضافة المنتج بنجاح!</div>
+                        <div id="successMessage" class="success-msg" style="display:none; color:green; margin-top:10px;">تمت إضافة المنتج بنجاح!</div>
                     </form>
                 </div>
             </div>
 
-            <!-- ============ إدارة الأقسام ============ -->
             <div id="manage-categories-section" class="content-section" style="display: none;">
                 <div class="form-container">
-                    <h2>إضافة قسم جديد</h2>
+                    
+                    <h2>إضافة قسم رئيسي</h2>
                     <form id="addCategoryForm" style="margin-bottom: 30px;">
                         <div class="form-group">
                             <label>اسم القسم (مثل: أدوات مدرسية)</label>
                             <input type="text" id="catName" required>
                         </div>
                         <button type="submit" class="submit-btn" id="submitCatBtn" style="background-color: #28a745;">
-                            <i class="fa-solid fa-plus"></i> إضافة القسم
+                            <i class="fa-solid fa-plus"></i> إضافة القسم الرئيسي
                         </button>
                     </form>
 
-                    <h2>الأقسام الحالية</h2>
-                    <table class="products-table">
-                        <thead>
-                            <tr>
-                                <th>اسم القسم</th>
-                                <th>إجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="categoriesTableBody">
-                            <tr><td colspan="2" style="text-align: center;">جاري التحميل...</td></tr>
-                        </tbody>
-                    </table>
+                    <hr style="margin: 30px 0; border: 1px solid #eee;">
+
+                    <h2>إضافة قسم فرعي</h2>
+                    <form id="addSubCategoryForm" style="margin-bottom: 30px;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>اختر القسم الرئيسي</label>
+                                <select id="parentCategorySelect" required>
+                                    <option value="" disabled selected>جاري التحميل...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>اسم القسم الفرعي (مثل: كشاكيل، أقلام)</label>
+                                <input type="text" id="subCatName" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn" id="submitSubCatBtn" style="background-color: #17a2b8;">
+                            <i class="fa-solid fa-code-branch"></i> إضافة القسم الفرعي
+                        </button>
+                    </form>
+
+                    <hr style="margin: 30px 0; border: 1px solid #eee;">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <h2>الأقسام الرئيسية</h2>
+                            <table class="products-table">
+                                <thead>
+                                    <tr>
+                                        <th>اسم القسم</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoriesTableBody">
+                                    <tr><td colspan="2" style="text-align: center;">جاري التحميل...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="form-group">
+                            <h2>الأقسام الفرعية</h2>
+                            <table class="products-table">
+                                <thead>
+                                    <tr>
+                                        <th>القسم الفرعي</th>
+                                        <th>يتبع لقسم</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subCategoriesTableBody">
+                                    <tr><td colspan="3" style="text-align: center;">جاري التحميل...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            <!-- ============ إدارة المنتجات ============ -->
             <div id="manage-products-section" class="content-section" style="display: none;">
                 <div class="form-container">
                     <h2>المنتجات المضافة</h2>
@@ -293,7 +343,7 @@
                             <tr>
                                 <th>الصورة</th>
                                 <th>اسم المنتج</th>
-                                <th>القسم</th>
+                                <th>القسم (فرعي / رئيسي)</th>
                                 <th>السعر</th>
                                 <th>إجراءات</th>
                             </tr>
@@ -323,7 +373,6 @@
         </main>
     </div>
 
-    <!-- ============ نافذة تعديل المنتج ============ -->
     <div id="editModal" class="edit-modal">
         <div class="edit-modal-content">
             <span class="close-edit" id="closeEditModal">&times;</span>
@@ -342,9 +391,15 @@
                         <input type="text" id="editProductBrand" required>
                     </div>
                     <div class="form-group">
-                        <label>القسم <span class="optional-tag">(اختياري)</span></label>
-                        <select id="editProductCategory">
-                            <option value="الكل">الكل</option>
+                        <label>القسم الرئيسي</label>
+                        <select id="editProductCategory" required>
+                            <option value="">اختر القسم</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>القسم الفرعي</label>
+                        <select id="editProductSubCategory">
+                            <option value="">بدون قسم فرعي</option>
                         </select>
                     </div>
                 </div>
